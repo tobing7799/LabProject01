@@ -50,6 +50,7 @@ Texture2D gtxtStandardTextures[7] : register(t6);
 #endif
 
 SamplerState gssWrap : register(s0);
+SamplerState gWrapSamplerState : register(s1);
 
 struct VS_STANDARD_INPUT
 {
@@ -117,7 +118,6 @@ float4 PSStandard(VS_STANDARD_OUTPUT input) : SV_TARGET
 		cIllumination = Lighting(input.positionW, normalW);
 		cColor = lerp(cColor, cIllumination, 0.5f);
 	}
-
 	return(cColor);
 }
 
@@ -223,7 +223,7 @@ float4 PSTerrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
 {
 	float4 cBaseTexColor = gtxtTerrainTexture.Sample(gssWrap, input.uv0);
 	float4 cDetailTexColor = gtxtDetailTexture.Sample(gssWrap, input.uv1);
-//	float fAlpha = gtxtTerrainTexture.Sample(gssWrap, input.uv0);
+	//float fAlpha = gtxtAlphaTexture.Sample(gssWrap, input.uv0);
 
 	float4 cColor = cBaseTexColor * 0.5f + cDetailTexColor * 0.5f;
 	//	float4 cColor = saturate(lerp(cBaseTexColor, cDetailTexColor, fAlpha));
@@ -251,3 +251,32 @@ float4 PSTextured(VS_SPRITE_TEXTURED_OUTPUT input, uint nPrimitiveID : SV_Primit
 	return(cColor);
 }
 */
+
+struct VS_TEXTURED_INPUT
+{
+	float3 position : POSITION;
+	float2 uv : TEXCOORD;
+};
+
+struct VS_TEXTURED_OUTPUT
+{
+	float4 position : SV_POSITION;
+	float2 uv : TEXCOORD;
+};
+
+VS_TEXTURED_OUTPUT VSTextured(VS_TEXTURED_INPUT input)
+{
+	VS_TEXTURED_OUTPUT output;
+
+	output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+	output.uv = input.uv;
+
+	return(output);
+}
+
+float4 PSTextured(VS_TEXTURED_OUTPUT input) : SV_TARGET
+{
+	float4 cColor = gtxtAlbedoTexture.Sample(gWrapSamplerState, input.uv);
+
+	return(cColor);
+}
