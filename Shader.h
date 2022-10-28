@@ -211,3 +211,24 @@ public:
 	CMaterial* m_ppFlowerMaterials[2] = { NULL, NULL };
 #endif
 };
+
+class CWaterShader : public CObjectsShader
+{
+public:
+	CWaterShader();
+	virtual ~CWaterShader();
+
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerState();
+	virtual D3D12_BLEND_DESC CreateBlendState();
+
+	virtual void BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pContext=NULL);
+	virtual void ReleaseObjects();
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState=0);
+
+	virtual void ReleaseUploadBuffers();
+
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader();
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader();
+
+};

@@ -1173,3 +1173,11 @@ void CGrassObject::Animate(float fTimeElapsed)
 
 	Rotate(0.0f, 0.0f, m_fRotationAngle);
 }
+
+CWater::CWater()
+{
+}
+
+CWater::~CWater()
+{
+}

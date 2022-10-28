@@ -186,6 +186,7 @@ float4 PSTextured(VS_SPRITE_TEXTURED_OUTPUT input) : SV_TARGET
 {
 	float4 cColor = gtxtTerrainTexture.Sample(gssWrap, input.uv);
 
+	return float4(input.uv, 0, 1);
 	return(cColor);
 }
 

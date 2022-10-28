@@ -73,7 +73,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	XMFLOAT4 xmf4Color(0.0f, 0.5f, 0.0f, 0.0f);
 	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Image/terrain.raw"), 257, 257, 257, 257, xmf3Scale, xmf4Color);
 
-	m_nShaders = 2;
+	m_nShaders = 3;
 	m_ppShaders = new CShader*[m_nShaders];
 
 	CObjectsShader *pObjectsShader = new CObjectsShader();
@@ -86,6 +86,12 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	pBillboardObjectShader->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
 	pBillboardObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pTerrain);
 	m_ppShaders[1] = pBillboardObjectShader;
+
+	CWaterShader* pWaterObjectShader = new CWaterShader();
+	pWaterObjectShader->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
+	pWaterObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pTerrain);
+	m_ppShaders[2] = pWaterObjectShader;
+
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
@@ -124,7 +130,7 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	ID3D12RootSignature *pd3dGraphicsRootSignature = NULL;
 
 #ifdef _WITH_STANDARD_TEXTURE_MULTIPLE_DESCRIPTORS
-	D3D12_DESCRIPTOR_RANGE pd3dDescriptorRanges[9];
+	D3D12_DESCRIPTOR_RANGE pd3dDescriptorRanges[10];
 
 	pd3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	pd3dDescriptorRanges[0].NumDescriptors = 1;
@@ -180,7 +186,13 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	pd3dDescriptorRanges[8].RegisterSpace = 0;
 	pd3dDescriptorRanges[8].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER pd3dRootParameters[12];
+	pd3dDescriptorRanges[9].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	pd3dDescriptorRanges[9].NumDescriptors = 1;
+	pd3dDescriptorRanges[9].BaseShaderRegister = 0; //t0: gtxtTexture
+	pd3dDescriptorRanges[9].RegisterSpace = 0;
+	pd3dDescriptorRanges[9].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	D3D12_ROOT_PARAMETER pd3dRootParameters[13];
 
 	pd3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	pd3dRootParameters[0].Descriptor.ShaderRegister = 1; //Camera
@@ -242,6 +254,11 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	pd3dRootParameters[11].DescriptorTable.NumDescriptorRanges = 1;
 	pd3dRootParameters[11].DescriptorTable.pDescriptorRanges = &(pd3dDescriptorRanges[8]);
 	pd3dRootParameters[11].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	pd3dRootParameters[12].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	pd3dRootParameters[12].DescriptorTable.NumDescriptorRanges = 1;
+	pd3dRootParameters[12].DescriptorTable.pDescriptorRanges = &(pd3dDescriptorRanges[9]);
+	pd3dRootParameters[12].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 #else
 	D3D12_DESCRIPTOR_RANGE pd3dDescriptorRanges[2];
 

@@ -477,7 +477,6 @@ void CObjectsShader::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12Graph
 {
 	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256ÀÇ ¹è¼ö
 	m_pd3dcbGameObjects = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes * m_nObjects, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
-
 }
 
 float Random(float fMin, float fMax)
@@ -702,9 +701,10 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 	CRawFormatImage* pRawFormatImage = new CRawFormatImage(L"Image/ObjectsMap.raw", 257, 257, true);
 
 	int nGrassObjects = 0, nFlowerObjects = 0, nBlacks = 0, nOthers = 0, nTreeObjects[3] = { 0, 0, 0 };
-	for (int z = 2; z <= 254; z++)
+
+	for (int z = 2; z <= 254; z+=8)
 	{
-		for (int x = 2; x <= 254; x++)
+		for (int x = 2; x <= 254; x+=8)
 		{
 			BYTE nPixel = pRawFormatImage->GetRawImagePixel(x, z);
 			switch (nPixel)
@@ -721,6 +721,7 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 			}
 		}
 	}
+
 	m_nObjects = nGrassObjects + nFlowerObjects + nTreeObjects[0] + nTreeObjects[1] + nTreeObjects[2];
 
 	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255);
@@ -746,9 +747,9 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 	m_ppObjects = new CGameObject * [m_nObjects];
 
 	CGrassObject* pBillboardObject = NULL;
-	for (int nObjects = 0, z = 2; z <= 254; z++)
+	for (int nObjects = 0, z = 2; z <= 254; z+=8)
 	{
-		for (int x = 2; x <= 254; x++)
+		for (int x = 2; x <= 254; x+=8)
 		{
 			BYTE nPixel = pRawFormatImage->GetRawImagePixel(x, z);
 
@@ -1003,3 +1004,105 @@ void CTerrainShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
 	if (m_d3dPipelineStateDesc.InputLayout.pInputElementDescs) delete[] m_d3dPipelineStateDesc.InputLayout.pInputElementDescs;
 }
 
+CWaterShader::CWaterShader()
+{
+}
+
+CWaterShader::~CWaterShader()
+{
+}
+
+D3D12_SHADER_BYTECODE CWaterShader::CreateVertexShader()
+{
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSTextured", "vs_5_1", &m_pd3dVertexShaderBlob));
+}
+D3D12_SHADER_BYTECODE CWaterShader::CreatePixelShader()
+{
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSTextured", "ps_5_1", &m_pd3dPixelShaderBlob));
+}
+
+D3D12_RASTERIZER_DESC CWaterShader::CreateRasterizerState()
+{
+	D3D12_RASTERIZER_DESC d3dRasterizerDesc;
+	::ZeroMemory(&d3dRasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
+	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	d3dRasterizerDesc.FrontCounterClockwise = FALSE;
+	d3dRasterizerDesc.DepthBias = 0;
+	d3dRasterizerDesc.DepthBiasClamp = 0.0f;
+	d3dRasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	d3dRasterizerDesc.DepthClipEnable = TRUE;
+	d3dRasterizerDesc.MultisampleEnable = FALSE;
+	d3dRasterizerDesc.AntialiasedLineEnable = FALSE;
+	d3dRasterizerDesc.ForcedSampleCount = 0;
+	d3dRasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+	return d3dRasterizerDesc;
+}
+
+D3D12_BLEND_DESC CWaterShader::CreateBlendState()
+{
+	D3D12_BLEND_DESC d3dBlendDesc;
+	::ZeroMemory(&d3dBlendDesc, sizeof(D3D12_BLEND_DESC));
+	d3dBlendDesc.AlphaToCoverageEnable = FALSE;
+	d3dBlendDesc.IndependentBlendEnable = FALSE;
+	d3dBlendDesc.RenderTarget[0].BlendEnable = TRUE;
+	d3dBlendDesc.RenderTarget[0].LogicOpEnable = FALSE;
+	d3dBlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+	d3dBlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	d3dBlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	d3dBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	d3dBlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	d3dBlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	d3dBlendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+	d3dBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	return d3dBlendDesc;
+}
+
+void CWaterShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState)
+{
+	CObjectsShader::Render(pd3dCommandList, pCamera);
+}
+
+void CWaterShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pContext)
+{
+	CWater* pWaterObject = new CWater();
+	CTexturedRectMesh* pWaterMesh = new CTexturedRectMesh(pd3dDevice, pd3dCommandList, 2000, 0, 2000, 0, 0, 0);
+
+	CMesh* pMesh = NULL;
+	pMesh = pWaterMesh;
+	pWaterObject->SetMesh(0, pMesh);
+	CMaterial* pMaterial = NULL;
+
+	CTexture* pWaterTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
+	pWaterTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/Water.dds", RESOURCE_TEXTURE2D, 0);
+
+	CMaterial* pWaterMaterial = new CMaterial();
+	pWaterMaterial->SetTexture(pWaterTexture);
+
+	pMaterial = pWaterMaterial;
+	pWaterObject->SetMaterial(0, pMaterial);
+
+
+	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255);
+	m_nObjects = 1;
+	m_ppObjects = new CGameObject * [m_nObjects];
+
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, m_nObjects, 1);
+	CreateShaderVariables(pd3dDevice, pd3dCommandList);
+	CreateConstantBufferViews(pd3dDevice, m_nObjects, m_pd3dcbGameObjects, ncbElementBytes);
+	CreateShaderResourceViews(pd3dDevice, pWaterTexture, 0, 3);
+
+	pWaterObject->SetPosition(850,30,850);
+	m_ppObjects[0] = pWaterObject;
+}
+
+void CWaterShader::ReleaseUploadBuffers()
+{
+	CObjectsShader::ReleaseUploadBuffers();
+}
+
+void CWaterShader::ReleaseObjects()
+{
+	CObjectsShader::ReleaseObjects();
+}

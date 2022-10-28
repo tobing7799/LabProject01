@@ -76,6 +76,7 @@ public:
 
 	CSkyBox								*m_pSkyBox = NULL;
 	CHeightMapTerrain				*m_pTerrain = NULL;
+	CWater								* m_pWater = NULL;
 
 	LIGHT								*m_pLights = NULL;
 	int									m_nLights = 0;
