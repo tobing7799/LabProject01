@@ -806,8 +806,8 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 				pBillboardObject->SetMesh(0, pMesh);
 				pBillboardObject->SetMaterial(0,pMaterial);
 
-				float xPosition = x * xmf3Scale.x;
-				float zPosition = z * xmf3Scale.z;
+				float xPosition = -x * xmf3Scale.x;
+				float zPosition = -z * xmf3Scale.z;
 				float fHeight = pTerrain->GetHeight(xPosition, zPosition);
 				pBillboardObject->SetPosition(xPosition, fHeight + fyOffset, zPosition);
 				pBillboardObject->SetCbvGPUDescriptorHandlePtr(m_d3dCbvGPUDescriptorStartHandle.ptr + (::gnCbvSrvDescriptorIncrementSize * nObjects));
@@ -1014,7 +1014,7 @@ CWaterShader::~CWaterShader()
 
 D3D12_SHADER_BYTECODE CWaterShader::CreateVertexShader()
 {
-	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSTextured", "vs_5_1", &m_pd3dVertexShaderBlob));
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSTextured_WATER", "vs_5_1", &m_pd3dVertexShaderBlob));
 }
 D3D12_SHADER_BYTECODE CWaterShader::CreatePixelShader()
 {
@@ -1061,11 +1061,15 @@ D3D12_BLEND_DESC CWaterShader::CreateBlendState()
 
 void CWaterShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState)
 {
+	m_GameTimer.Tick(0.0f);
+	float timer = m_GameTimer.GetTotalTime() * 0.01f;
+	pd3dCommandList->SetGraphicsRoot32BitConstants(13, 1, &timer, 0);
 	CObjectsShader::Render(pd3dCommandList, pCamera);
 }
 
 void CWaterShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pContext)
 {
+	m_GameTimer.Start();
 	CWater* pWaterObject = new CWater();
 	CTexturedRectMesh* pWaterMesh = new CTexturedRectMesh(pd3dDevice, pd3dCommandList, 2000, 0, 2000, 0, 0, 0);
 

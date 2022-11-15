@@ -6,6 +6,7 @@
 
 #include "Object.h"
 #include "Camera.h"
+#include "Timer.h"
 
 class CShader
 {
@@ -231,4 +232,5 @@ public:
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader();
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader();
 
+	CGameTimer					m_GameTimer;
 };

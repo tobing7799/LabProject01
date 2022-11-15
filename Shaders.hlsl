@@ -7,6 +7,8 @@ struct MATERIAL
 
 };
 
+float gtime : register(b0);
+
 cbuffer cbCameraInfo : register(b1)
 {
 	matrix		gmtxView : packoffset(c0);
@@ -280,4 +282,27 @@ float4 PSTextured(VS_TEXTURED_OUTPUT input) : SV_TARGET
 	float4 cColor = gtxtAlbedoTexture.Sample(gWrapSamplerState, input.uv);
 
 	return(cColor);
+}
+
+
+struct VS_WATER_TEXTURED_INPUT
+{
+	float3 position : POSITION;
+	float2 uv : TEXCOORD;
+};
+
+struct VS_WATER_TEXTURED_OUTPUT
+{
+	float4 position : SV_POSITION;
+	float2 uv : TEXCOORD;
+};
+
+VS_WATER_TEXTURED_OUTPUT VSTextured_WATER(VS_WATER_TEXTURED_INPUT input)
+{
+	VS_WATER_TEXTURED_OUTPUT output;
+
+	output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+	output.uv = input.uv + gtime;
+	//output.uv += gtime;
+	return(output);
 }
