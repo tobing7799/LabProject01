@@ -203,6 +203,10 @@ public:
 	CGameObject 					*m_pChild = NULL;
 	CGameObject 					*m_pSibling = NULL;
 	D3D12_GPU_DESCRIPTOR_HANDLE		m_d3dCbvGPUDescriptorHandle;
+
+
+	LPVOID							m_pObjectUpdatedContext;
+
 //	ID3D12Resource* m_pd3dcbGameObject = NULL;
 //	CB_GAMEOBJECT_INFO* m_pcbMappedGameObject = NULL;
 
