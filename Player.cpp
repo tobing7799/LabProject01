@@ -379,6 +379,16 @@ void CAirplanePlayer::OnPlayerUpdateCallback(float fTimeElapsed)
 		xmf3PlayerPosition.y -= (GetVelocity().y * fTimeElapsed);
 		SetPosition(xmf3PlayerPosition);
 	}
+
+	if (xmf3PlayerPosition.y + (GetVelocity().y * fTimeElapsed * 2) < 60.0f)
+	{
+		XMFLOAT3 xmf3PlayerVelocity = GetVelocity();
+		xmf3PlayerVelocity.y = 0.0f;
+		SetVelocity(xmf3PlayerVelocity);
+		xmf3PlayerPosition.y = 60.0f;
+		xmf3PlayerPosition.y += (GetVelocity().y * fTimeElapsed);
+		SetPosition(xmf3PlayerPosition);
+	}
 }
 
 void CAirplanePlayer::OnCameraUpdateCallback(float fTimeElapsed)
