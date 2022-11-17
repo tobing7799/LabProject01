@@ -268,7 +268,6 @@ CAirplanePlayer::CAirplanePlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommand
 	SetChild(pGameObject);
 
 	PrepareAnimate();
-
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
@@ -281,8 +280,6 @@ void CAirplanePlayer::PrepareAnimate()
 	m_pMainRotorFrame = FindFrame("Rotor");
 	m_pTailRotorFrame = FindFrame("Back_Rotor");
 	m_pHellfire_MissileFrame = FindFrame("Hellfire_Missile");
-	m_pHellfire_MissileFrame->SetScale(3.0, 3.0, 3.0);
-	m_pHellfire_MissileFrame->SetPosition(0.0, 0.0, 0.0);
 }
 
 void CAirplanePlayer::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
@@ -296,10 +293,6 @@ void CAirplanePlayer::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
 	{
 		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
 		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
-	}
-	if (m_pHellfire_MissileFrame)
-	{
-		return;
 	}
 
 	CPlayer::Animate(fTimeElapsed, pxmf4x4Parent);
@@ -416,10 +409,22 @@ void CAirplanePlayer::OnCameraUpdateCallback(float fTimeElapsed)
 	}
 }
 
-void CAirplanePlayer::ReloadMissile()
+void CAirplanePlayer::FireMissile(float time)
 {
-	if (m_pMissileState == false)
+	if (m_pMissileDuringtime < m_pMissileTotaltime)
 	{
-		m_pHellfire_MissileFrame->SetPosition(this->GetPosition().x, this->GetPosition().y, this->GetPosition().z);
+		m_pMissileTotaltime = 0.0f;
+		m_pMissileState = false;
+	}
+	if (m_pMissileState == true)
+	{
+		m_pMissileTotaltime += time;
+		m_pHellfire_MissileFrame->MoveForward(time * 200.f);
+	}
+	else
+	{
+
+		m_pHellfire_MissileFrame->m_xmf4x4Transform = this->m_xmf4x4World;
+		m_pHellfire_MissileFrame->SetScale(3.0, 3.0, 3.0);
 	}
 }

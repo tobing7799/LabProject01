@@ -248,6 +248,9 @@ public:
 	void SetPosition(float x, float y, float z);
 	void SetPosition(XMFLOAT3 xmf3Position);
 	void SetScale(float x, float y, float z);
+	void SetLook(XMFLOAT3 xmf3Lookvector);
+	void SetUp(XMFLOAT3 xmf3Upvector);
+	void SetRight(XMFLOAT3 xmfRightvector);
 
 	void MoveStrafe(float fDistance = 1.0f);
 	void MoveUp(float fDistance = 1.0f);

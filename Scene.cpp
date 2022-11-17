@@ -399,7 +399,6 @@ bool CScene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam,
 
 bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
-	XMMATRIX xmmtxtrans = XMMatrixTranslation(0.0, 0.0, 0.1);
 	switch (nMessageID)
 	{
 	case WM_KEYDOWN:
@@ -413,13 +412,12 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 		case 'R': m_ppGameObjects[0]->MoveUp(-1.0f); break;*/
 		case 'r':
 		case 'R':
-			((CAirplanePlayer*)m_pPlayer)->ReloadMissile();
+			std::cout << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().x << "  " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().y << "    " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().z << std::endl;
 			break;
 		case 'f':
 		case 'F':
-			/*((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->SetPosition(m_pPlayer->GetPosition().x, m_pPlayer->GetPosition().y, m_pPlayer->GetPosition().z+30.0f);*/
-			((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxtrans, ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->m_xmf4x4Transform);
-			std::cout << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().x << "  " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().y << "    " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().z << std::endl;
+			((CAirplanePlayer*)m_pPlayer)->m_pMissileState = true;
+			//std::cout << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().x << "  " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().y << "    " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().z << std::endl;
 			break;
 		default:
 			break;
@@ -438,6 +436,7 @@ bool CScene::ProcessInput(UCHAR *pKeysBuffer)
 
 void CScene::AnimateObjects(float fTimeElapsed)
 {
+	((CAirplanePlayer*)m_pPlayer)->FireMissile(fTimeElapsed);
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->Animate(fTimeElapsed, NULL);
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->UpdateTransform(NULL);
 

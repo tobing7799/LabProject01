@@ -626,6 +626,33 @@ void CGameObject::SetScale(float x, float y, float z)
 	UpdateTransform(NULL);
 }
 
+void CGameObject::SetRight(XMFLOAT3 xmf3Rightvector)
+{
+	m_xmf4x4World._11 = xmf3Rightvector.x;
+	m_xmf4x4World._12 = xmf3Rightvector.y;
+	m_xmf4x4World._13 = xmf3Rightvector.z;
+
+	UpdateTransform(NULL);
+}
+
+void CGameObject::SetLook(XMFLOAT3 xmf3Lookvector)
+{
+	m_xmf4x4World._31 = xmf3Lookvector.x;
+	m_xmf4x4World._32 = xmf3Lookvector.y;
+	m_xmf4x4World._33 = xmf3Lookvector.z;
+
+	UpdateTransform(NULL);
+}
+
+void CGameObject::SetUp(XMFLOAT3 xmf3Upvector)
+{
+	m_xmf4x4World._21 = xmf3Upvector.x;
+	m_xmf4x4World._22 = xmf3Upvector.y;
+	m_xmf4x4World._23 = xmf3Upvector.z;
+
+	UpdateTransform(NULL);
+}
+
 XMFLOAT3 CGameObject::GetPosition()
 {
 	return(XMFLOAT3(m_xmf4x4World._41, m_xmf4x4World._42, m_xmf4x4World._43));
