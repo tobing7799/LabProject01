@@ -92,6 +92,8 @@ public:
 
 	CGameObject					*m_pMainRotorFrame = NULL;
 	CGameObject					*m_pTailRotorFrame = NULL;
+	CGameObject					*m_pHellfire_MissileFrame = NULL;
+	bool								m_pMissileState = false;
 
 private:
 	virtual void PrepareAnimate();
@@ -102,6 +104,7 @@ public:
 	virtual void OnPrepareRender();
 	virtual void OnPlayerUpdateCallback(float fTimeElapsed);
 	virtual void OnCameraUpdateCallback(float fTimeElapsed);
+	void ReloadMissile();
 };
 
 

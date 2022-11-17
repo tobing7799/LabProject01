@@ -262,9 +262,9 @@ CAirplanePlayer::CAirplanePlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommand
 	SetCameraUpdatedContext(pTerrain);
 	m_pShader = new CPlayerShader();
 	m_pShader->CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
-	m_pShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 1); //Mi24(1)
+	m_pShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 2); //Mi24(1)
 
-	CGameObject *pGameObject = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Mi24.bin", m_pShader);
+	CGameObject *pGameObject = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Gunship.bin", m_pShader);
 	SetChild(pGameObject);
 
 	PrepareAnimate();
@@ -278,8 +278,11 @@ CAirplanePlayer::~CAirplanePlayer()
 
 void CAirplanePlayer::PrepareAnimate()
 {
-	m_pMainRotorFrame = FindFrame("Top_Rotor");
-	m_pTailRotorFrame = FindFrame("Tail_Rotor");
+	m_pMainRotorFrame = FindFrame("Rotor");
+	m_pTailRotorFrame = FindFrame("Back_Rotor");
+	m_pHellfire_MissileFrame = FindFrame("Hellfire_Missile");
+	m_pHellfire_MissileFrame->SetScale(3.0, 3.0, 3.0);
+	m_pHellfire_MissileFrame->SetPosition(0.0, 0.0, 0.0);
 }
 
 void CAirplanePlayer::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
@@ -293,6 +296,10 @@ void CAirplanePlayer::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
 	{
 		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
 		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
+	}
+	if (m_pHellfire_MissileFrame)
+	{
+		return;
 	}
 
 	CPlayer::Animate(fTimeElapsed, pxmf4x4Parent);
@@ -406,5 +413,13 @@ void CAirplanePlayer::OnCameraUpdateCallback(float fTimeElapsed)
 			CThirdPersonCamera* p3rdPersonCamera = (CThirdPersonCamera*)m_pCamera;
 			p3rdPersonCamera->SetLookAt(GetPosition());
 		}
+	}
+}
+
+void CAirplanePlayer::ReloadMissile()
+{
+	if (m_pMissileState == false)
+	{
+		m_pHellfire_MissileFrame->SetPosition(this->GetPosition().x, this->GetPosition().y, this->GetPosition().z);
 	}
 }

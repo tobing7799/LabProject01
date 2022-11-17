@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 
 #include "stdafx.h"
+#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
 #include "GameFramework.h"
 
 CGameFramework::CGameFramework()

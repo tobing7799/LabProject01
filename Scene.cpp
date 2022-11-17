@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "Scene.h"
+#include<iostream>
 
 CScene::CScene()
 {
@@ -398,17 +399,28 @@ bool CScene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam,
 
 bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
+	XMMATRIX xmmtxtrans = XMMatrixTranslation(0.0, 0.0, 0.1);
 	switch (nMessageID)
 	{
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		case 'W': m_ppGameObjects[0]->MoveForward(+1.0f); break;
+		/*case 'W': m_ppGameObjects[0]->MoveForward(+1.0f); break;
 		case 'S': m_ppGameObjects[0]->MoveForward(-1.0f); break;
 		case 'A': m_ppGameObjects[0]->MoveStrafe(-1.0f); break;
 		case 'D': m_ppGameObjects[0]->MoveStrafe(+1.0f); break;
 		case 'Q': m_ppGameObjects[0]->MoveUp(+1.0f); break;
-		case 'R': m_ppGameObjects[0]->MoveUp(-1.0f); break;
+		case 'R': m_ppGameObjects[0]->MoveUp(-1.0f); break;*/
+		case 'r':
+		case 'R':
+			((CAirplanePlayer*)m_pPlayer)->ReloadMissile();
+			break;
+		case 'f':
+		case 'F':
+			/*((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->SetPosition(m_pPlayer->GetPosition().x, m_pPlayer->GetPosition().y, m_pPlayer->GetPosition().z+30.0f);*/
+			((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxtrans, ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->m_xmf4x4Transform);
+			std::cout << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().x << "  " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().y << "    " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().z << std::endl;
+			break;
 		default:
 			break;
 		}
