@@ -5,6 +5,16 @@ struct MATERIAL
 	float4					m_cSpecular; //a = power
 	float4					m_cEmissive;
 
+	//matrix				gmtxTexture;
+	//int2				gi2TextureTiling;
+	//float2				gf2TextureOffset;
+};
+
+struct TEXTURE
+{
+	float4				gtexture;
+	int2				gi2TextureTiling;
+	float2				gf2TextureOffset;
 };
 
 float gtime : register(b0);
@@ -20,7 +30,8 @@ cbuffer cbGameObjectInfo : register(b2)
 {
 	matrix		gmtxGameObject : packoffset(c0);
 	MATERIAL	gMaterial : packoffset(c4);
-	uint		gnTexturesMask : packoffset(c8);
+	TEXTURE		gtexture : packoffset(c8);
+	uint		gnTexturesMask : packoffset(c10);
 };
 
 #include "Light.hlsl"
@@ -94,7 +105,7 @@ float4 PSStandard(VS_STANDARD_OUTPUT input) : SV_TARGET
 	float4 cNormalColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	float4 cMetallicColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	float4 cEmissionColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-
+	//return float4(input.uv, 0, 1);
 #ifdef _WITH_STANDARD_TEXTURE_MULTIPLE_DESCRIPTORS
 	if (gnTexturesMask & MATERIAL_ALBEDO_MAP) cAlbedoColor = gtxtAlbedoTexture.Sample(gssWrap, input.uv);
 	if (gnTexturesMask & MATERIAL_SPECULAR_MAP) cSpecularColor = gtxtSpecularTexture.Sample(gssWrap, input.uv);
@@ -158,40 +169,10 @@ float4 PSSkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-struct VS_SPRITE_TEXTURED_INPUT
-{
-	float3 position : POSITION;
-	float2 uv : TEXCOORD;
-};
-
-struct VS_SPRITE_TEXTURED_OUTPUT
-{
-	float4 position : SV_POSITION;
-	float2 uv : TEXCOORD;
-};
-
-VS_SPRITE_TEXTURED_OUTPUT VSTextured(VS_SPRITE_TEXTURED_INPUT input)
-{
-	VS_SPRITE_TEXTURED_OUTPUT output;
-
-	output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
-	output.uv = input.uv;
-
-	return(output);
-}
 
 Texture2D gtxtTerrainTexture : register(t14);
 Texture2D gtxtDetailTexture : register(t15);
 Texture2D gtxtAlphaTexture : register(t16);
-
-float4 PSTextured(VS_SPRITE_TEXTURED_OUTPUT input) : SV_TARGET
-{
-	float4 cColor = gtxtTerrainTexture.Sample(gssWrap, input.uv);
-
-	return float4(input.uv, 0, 1);
-	return(cColor);
-}
-
 
 struct VS_TERRAIN_INPUT
 {
@@ -277,10 +258,30 @@ VS_TEXTURED_OUTPUT VSTextured(VS_TEXTURED_INPUT input)
 	return(output);
 }
 
+VS_STANDARD_OUTPUT VSSpriteAnimation(VS_STANDARD_INPUT input)
+{
+	VS_STANDARD_OUTPUT output;
+
+	output.positionW = (float3)mul(float4(input.position, 1.0f), gmtxGameObject);
+	output.normalW = mul(input.normal, (float3x3)gmtxGameObject);
+	output.tangentW = (float3)mul(float4(input.tangent, 1.0f), gmtxGameObject);
+	output.bitangentW = (float3)mul(float4(input.bitangent, 1.0f), gmtxGameObject);
+	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
+	output.uv = input.uv;
+
+
+	output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+	//output.uv = mul(float3(input.uv, 1.0f), (float3x3)(gMaterial.gmtxTexture)).xy;
+	float3x3 gmtxtexture = { gtexture.gtexture.x,0,0,0,gtexture.gtexture.y,0,gtexture.gtexture.z,gtexture.gtexture.w,0 };
+	//float3x3 gmtxtexture = { 0.125,0,0,0,0.125,0,0,0,0 };
+	output.uv = mul(float3(input.uv, 1.0f), gmtxtexture).xy;
+	//output.uv = float2(1,0);
+	return(output);
+}
+
 float4 PSTextured(VS_TEXTURED_OUTPUT input) : SV_TARGET
 {
 	float4 cColor = gtxtAlbedoTexture.Sample(gWrapSamplerState, input.uv);
-
 	return(cColor);
 }
 

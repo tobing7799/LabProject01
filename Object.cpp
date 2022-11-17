@@ -254,6 +254,20 @@ D3D12_SHADER_RESOURCE_VIEW_DESC CTexture::GetShaderResourceViewDesc(int nIndex)
 	return(d3dShaderResourceViewDesc);
 }
 
+void CTexture::AnimateRowColumn(float fTime)
+{
+	//	m_xmf4x4Texture = Matrix4x4::Identity();
+	m_xmf4x4Texture._11 = 1.0f / float(m_nRows);
+	m_xmf4x4Texture._22 = 1.0f / float(m_nCols);
+	m_xmf4x4Texture._31 = float(m_nRow) / float(m_nRows);
+	m_xmf4x4Texture._32 = float(m_nCol) / float(m_nCols);
+	if (fTime == 0.0f)
+	{
+		if (++m_nCol == m_nCols) { m_nRow++; m_nCol = 0; }
+		if (m_nRow == m_nRows) m_nRow = 0;
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 CMaterial::CMaterial()
@@ -293,7 +307,16 @@ void CMaterial::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList
 	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4SpecularColor, 24);
 	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4EmissiveColor, 28);
 
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &m_nType, 32);
+	struct TEXTURE
+	{
+		float				gtexture[4];
+		int					gi2TextureTiling[2];
+		float				gf2TextureOffset[2];
+	};
+	TEXTURE texture{ m_pTexture->m_xmf4x4Texture._11, m_pTexture->m_xmf4x4Texture._22 ,m_pTexture->m_xmf4x4Texture._31, m_pTexture->m_xmf4x4Texture._32 };
+
+ 	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 8, &texture, 32);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &m_nType, 40);
 
 	if (m_pTexture) m_pTexture->UpdateShaderVariables(pd3dCommandList);
 }
@@ -1213,3 +1236,22 @@ CWater::CWater()
 CWater::~CWater()
 {
 }
+
+CMultiSpriteObject::CMultiSpriteObject()
+{
+}
+
+CMultiSpriteObject::~CMultiSpriteObject()
+{
+}
+
+void CMultiSpriteObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
+{
+	if (m_ppMaterials[0] && m_ppMaterials[0]->m_pTexture)
+	{
+		m_fTime += fTimeElapsed * 0.015f;
+		if (m_fTime >= m_fSpeed) m_fTime = 0.0f;
+		m_ppMaterials[0]->m_pTexture->AnimateRowColumn(m_fTime);
+	}
+}
+

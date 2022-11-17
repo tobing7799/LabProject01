@@ -115,6 +115,8 @@ public:
 	D3D12_SHADER_RESOURCE_VIEW_DESC GetShaderResourceViewDesc(int nIndex);
 
 	void ReleaseUploadBuffers();
+
+	void AnimateRowColumn(float fTime = 0.0f);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -195,7 +197,7 @@ public:
 
 	int								m_nMaterials = 0;
 	CMaterial						**m_ppMaterials = NULL;
-
+	CMaterial							* m_pMaterial = NULL;
 	XMFLOAT4X4						m_xmf4x4Transform;
 	XMFLOAT4X4						m_xmf4x4World;
 
@@ -388,3 +390,18 @@ public:
 private:
 
 };
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+class CMultiSpriteObject : public CGameObject
+{
+public:
+	CMultiSpriteObject();
+	virtual ~CMultiSpriteObject();
+
+	float m_fSpeed = 0.1f;
+	float m_fTime = 0.0f;
+
+	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+};
+
