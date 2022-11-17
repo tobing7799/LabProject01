@@ -107,7 +107,7 @@ public:
 	virtual void OnPlayerUpdateCallback(float fTimeElapsed);
 	virtual void OnCameraUpdateCallback(float fTimeElapsed);
 	void ReloadMissile();
-	void FireMissile(float time);
+	void FireMissile(CShader* Missilesprite, float time);
 };
 
 

@@ -35,7 +35,7 @@ protected:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE			m_d3dSrvCPUDescriptorNextHandle;
 	D3D12_GPU_DESCRIPTOR_HANDLE			m_d3dSrvGPUDescriptorNextHandle;
-	bool							m_bActive = true;
+	bool							m_bActive = false;
 public:
 	void AddRef() { m_nReferences++; }
 	void Release() { if (--m_nReferences <= 0) delete this; }
@@ -139,9 +139,9 @@ public:
 
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera, int nPipelineState=0);
 
-protected:
 	CGameObject						**m_ppObjects = 0;
 	int								m_nObjects = 0;
+protected:
 
 	ID3D12Resource* m_pd3dcbGameObjects = NULL;
 };

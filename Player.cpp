@@ -409,19 +409,33 @@ void CAirplanePlayer::OnCameraUpdateCallback(float fTimeElapsed)
 	}
 }
 
-void CAirplanePlayer::FireMissile(float time)
+void CAirplanePlayer::FireMissile(CShader* Missilesprite, float time)
 {
 	if (m_pMissileDuringtime < m_pMissileTotaltime)
 	{
+		Missilesprite->SetActive(!Missilesprite->GetActive());
 		m_pMissileTotaltime = 0.0f;
+
+		for (int i = 0; i < ((CObjectsShader*)Missilesprite)->m_nObjects; ++i)
+		{
+			((CObjectsShader*)Missilesprite)->m_ppObjects[i]->m_SpriteEnd = false;
+			((CObjectsShader*)Missilesprite)->m_ppObjects[i]->SetPosition(m_pHellfire_MissileFrame->GetPosition());
+		}
+
 		m_pMissileState = false;
 	}
-	if (m_pMissileState == true)
+	if (m_pMissileState == true && !Missilesprite->GetActive())
 	{
 		m_pMissileTotaltime += time;
-		m_pHellfire_MissileFrame->MoveForward(time * 200.f);
+		m_pHellfire_MissileFrame->MoveForward(time * 20.f);
 	}
-	else
+	else if (Missilesprite->GetActive() && !m_pMissileState)
+	{
+
+		m_pHellfire_MissileFrame->m_xmf4x4Transform = this->m_xmf4x4World;
+		m_pHellfire_MissileFrame->SetScale(3.0, 3.0, 3.0);
+	}
+	else if(!Missilesprite->GetActive()&&!m_pMissileState)
 	{
 
 		m_pHellfire_MissileFrame->m_xmf4x4Transform = this->m_xmf4x4World;

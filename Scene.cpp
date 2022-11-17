@@ -420,11 +420,17 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 		case 'r':
 		case 'R':
 			std::cout << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().x << "  " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().y << "    " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().z << std::endl;
-			m_ppShaders[3]->SetActive(!m_ppShaders[3]->GetActive());
 			break;
 		case 'f':
 		case 'F':
-			((CAirplanePlayer*)m_pPlayer)->m_pMissileState = true;
+			if(!((CAirplanePlayer*)m_pPlayer)->m_pMissileState)
+			{
+				if (m_ppShaders[3]->GetActive())
+				{
+					m_ppShaders[3]->SetActive(!m_ppShaders[3]->GetActive());
+				}
+				((CAirplanePlayer*)m_pPlayer)->m_pMissileState = true;
+			}
 			//std::cout << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().x << "  " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().y << "    " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().z << std::endl;
 			break;
 		default:
@@ -444,7 +450,7 @@ bool CScene::ProcessInput(UCHAR *pKeysBuffer)
 
 void CScene::AnimateObjects(float fTimeElapsed)
 {
-	((CAirplanePlayer*)m_pPlayer)->FireMissile(fTimeElapsed);
+	((CAirplanePlayer*)m_pPlayer)->FireMissile(m_ppShaders[3],fTimeElapsed);
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->Animate(fTimeElapsed, NULL);
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->UpdateTransform(NULL);
 

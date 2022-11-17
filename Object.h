@@ -116,7 +116,7 @@ public:
 
 	void ReleaseUploadBuffers();
 
-	void AnimateRowColumn(float fTime = 0.0f);
+	bool AnimateRowColumn(float fTime = 0.0f);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,6 +208,8 @@ public:
 
 
 	LPVOID							m_pObjectUpdatedContext;
+
+	bool								m_SpriteEnd = true;
 
 //	ID3D12Resource* m_pd3dcbGameObject = NULL;
 //	CB_GAMEOBJECT_INFO* m_pcbMappedGameObject = NULL;
