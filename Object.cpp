@@ -6,6 +6,7 @@
 #include "Object.h"
 #include "Shader.h"
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 CTexture::CTexture(int nTextures, UINT nTextureType, int nSamplers, int nRootParameters, int nRows, int nCols)
@@ -263,11 +264,11 @@ bool CTexture::AnimateRowColumn(float fTime)
 	m_xmf4x4Texture._32 = float(m_nCol) / float(m_nCols);
 	if (fTime == 0.0f)
 	{
-		if (++m_nCol == m_nCols) { m_nRow++; m_nCol = 0; }
-		if (m_nRow == 2) 
+		if (++m_nCol == m_nCols) { m_nRow++; m_nCol = 1; }
+		if (m_nRow == 4) 
 		{
-			return true;
 			m_nRow = 0;
+			return true;
 		}
 	}
 	return false;
@@ -447,6 +448,12 @@ void CGameObject::SetMesh(int nIndex, CMesh* pMesh)
 	}
 }
 
+void CGameObject::UpdateBoundingBox()
+{
+	m_xmOOBB_parent.Transform(m_xmOOBB_object, XMLoadFloat4x4(&m_xmf4x4World));
+	XMStoreFloat4(&m_xmOOBB_object.Orientation, XMQuaternionNormalize(XMLoadFloat4(&m_xmOOBB_object.Orientation)));
+}
+
 /*
 void CGameObject::SetShader(CShader* pShader)
 {
@@ -482,6 +489,7 @@ void CGameObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 {
 	if (m_pSibling) m_pSibling->Animate(fTimeElapsed, pxmf4x4Parent);
 	if (m_pChild) m_pChild->Animate(fTimeElapsed, &m_xmf4x4World);
+	UpdateBoundingBox();
 }
 
 CGameObject* CGameObject::FindFrame(char* pstrFrameName)
@@ -1007,6 +1015,14 @@ void CGameObject::SetLookAt(XMFLOAT3& xmf3Target, XMFLOAT3& xmf3Up)
 		*/
 }
 
+void CGameObject::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
+{
+	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(GetPosition(), xmf3LookTo, xmf3Up);
+	m_xmf4x4Transform._11 = xmf4x4View._11; m_xmf4x4Transform._12 = xmf4x4View._21; m_xmf4x4Transform._13 = xmf4x4View._31;
+	m_xmf4x4Transform._21 = xmf4x4View._12; m_xmf4x4Transform._22 = xmf4x4View._22; m_xmf4x4Transform._23 = xmf4x4View._32;
+	m_xmf4x4Transform._31 = xmf4x4View._13; m_xmf4x4Transform._32 = xmf4x4View._23; m_xmf4x4Transform._33 = xmf4x4View._33;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 CSkyBox::CSkyBox(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature) : CGameObject(1, 1)
@@ -1049,6 +1065,8 @@ void CSkyBox::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
 //
 CSuperCobraObject::CSuperCobraObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature) : CGameObject(0, 0)
 {
+	m_xmOOBB_parent = BoundingOrientedBox(XMFLOAT3(0.0f, 1.0f, -1.0f), XMFLOAT3(1.5f, 2.0f, 5.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	m_xmOOBB_object = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 CSuperCobraObject::~CSuperCobraObject()
@@ -1254,7 +1272,7 @@ void CMultiSpriteObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 {
 	if (m_ppMaterials[0] && m_ppMaterials[0]->m_pTexture && !m_SpriteEnd)
 	{
-		m_fTime += fTimeElapsed * 0.01f;
+		m_fTime += fTimeElapsed * 0.015f;
 		if (m_fTime >= m_fSpeed) m_fTime = 0.0f;
 		if (m_ppMaterials[0]->m_pTexture->AnimateRowColumn(m_fTime))
 		{

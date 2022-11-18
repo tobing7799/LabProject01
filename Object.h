@@ -206,10 +206,27 @@ public:
 	CGameObject 					*m_pSibling = NULL;
 	D3D12_GPU_DESCRIPTOR_HANDLE		m_d3dCbvGPUDescriptorHandle;
 
+	BoundingOrientedBox m_xmOOBB_parent = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	BoundingOrientedBox m_xmOOBB_object = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 
+	BoundingOrientedBox m_BulletOOBB_parent = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	BoundingOrientedBox m_BulletOOBB_object = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	vector<XMFLOAT3> Travelpath = {
+	XMFLOAT3(1650,200,1450),
+	XMFLOAT3(1650,100, 400),
+	XMFLOAT3(1050,150, 400),
+	XMFLOAT3(1050,200,1600),
+	XMFLOAT3(400,150,1600),
+	XMFLOAT3(400,150,400),
+	};
+
+	int				Flightcount = 4;
 	LPVOID							m_pObjectUpdatedContext;
 
 	bool								m_SpriteEnd = true;
+	bool								m_Alive = true;
+	bool								m_RenderEnable = true;
 
 //	ID3D12Resource* m_pd3dcbGameObject = NULL;
 //	CB_GAMEOBJECT_INFO* m_pcbMappedGameObject = NULL;
@@ -222,6 +239,8 @@ public:
 	virtual void SetMaterial(int nMaterial, CMaterial *pMaterial);
 //	virtual void SetMaterial(CMaterial *pMaterial);
 
+	void UpdateBoundingBox();
+	void LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up);
 	void SetChild(CGameObject *pChild);
 
 	virtual void BuildMaterials(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList) { }

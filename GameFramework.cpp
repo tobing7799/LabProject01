@@ -438,12 +438,12 @@ void CGameFramework::ProcessInput()
 	if (!bProcessedByScene)
 	{
 		DWORD dwDirection = 0;
-		if (pKeysBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
-		if (pKeysBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
-		if (pKeysBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
-		if (pKeysBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
-		if (pKeysBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
-		if (pKeysBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
+		if (pKeysBuffer['w'] & 0xF0 || pKeysBuffer['W'] & 0xF0) dwDirection |= DIR_FORWARD;
+		if (pKeysBuffer['s'] & 0xF0 || pKeysBuffer['S'] & 0xF0)dwDirection |= DIR_BACKWARD;
+		if (pKeysBuffer['a'] & 0xF0 || pKeysBuffer['A'] & 0xF0) dwDirection |= DIR_LEFT;
+		if (pKeysBuffer['d'] & 0xF0 || pKeysBuffer['D'] & 0xF0) dwDirection |= DIR_RIGHT;
+		if (pKeysBuffer['q'] & 0xF0 || pKeysBuffer['Q'] & 0xF0) dwDirection |= DIR_UP;
+		if (pKeysBuffer['e'] & 0xF0 || pKeysBuffer['E'] & 0xF0) dwDirection |= DIR_DOWN;
 
 		float cxDelta = 0.0f, cyDelta = 0.0f;
 		POINT ptCursorPos;
@@ -510,7 +510,20 @@ void CGameFramework::MoveToNextFrame()
 //#define _WITH_PLAYER_TOP
 
 void CGameFramework::FrameAdvance()
-{    
+{   
+	if (m_pPlayer->GameCheck)
+	{
+		m_pPlayer->EndGame(m_hWnd);
+		OnDestroy();
+		CreateDirect3DDevice();
+		CreateCommandQueueAndList();
+		CreateRtvAndDsvDescriptorHeaps();
+		CreateSwapChain();
+		CreateDepthStencilView();
+		BuildObjects();
+		m_pPlayer->SetPosition(XMFLOAT3(400.0f, 100.0f, 400.0f));
+	}
+
 	m_GameTimer.Tick(0.0f);
 	
 	ProcessInput();

@@ -30,6 +30,12 @@ CPlayer::CPlayer() : CGameObject(0, 0)
 
 	m_pPlayerUpdatedContext = NULL;
 	m_pCameraUpdatedContext = NULL;
+
+	m_xmOOBB_parent = BoundingOrientedBox(XMFLOAT3(0.0f, -0.5f, -8.0f), XMFLOAT3(5.0f, 3.5f, 17.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	m_xmOOBB_object = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	m_BulletOOBB_parent = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, -8.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	m_BulletOOBB_object = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 CPlayer::~CPlayer()
@@ -104,8 +110,10 @@ void CPlayer::Rotate(float x, float y, float z)
 		if (z != 0.0f)
 		{
 			m_fRoll += z;
-			if (m_fRoll > +20.0f) { z -= (m_fRoll - 20.0f); m_fRoll = +20.0f; }
-			if (m_fRoll < -20.0f) { z -= (m_fRoll + 20.0f); m_fRoll = -20.0f; }
+			//if (m_fRoll > +20.0f) { z -= (m_fRoll - 20.0f); m_fRoll = +20.0f; }
+			//if (m_fRoll < -20.0f) { z -= (m_fRoll + 20.0f); m_fRoll = -20.0f; }
+			if (m_fRoll > 360.0f) m_fRoll -= 360.0f;
+			if (m_fRoll < 0.0f) m_fRoll += 360.0f;
 		}
 		m_pCamera->Rotate(x, y, z);
 		if (x != 0.0f)
@@ -251,6 +259,32 @@ void CPlayer::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamer
 	}
 }
 
+void CPlayer::EndGame(HWND hWnd)
+{
+	switch (GameCheck)
+	{
+	case 1://패배
+		if (MessageBox(hWnd, L"패배하였습니다. 다시하시겠습니까?", L"게임 끝", MB_YESNO) == IDYES)
+		{
+			GameCheck = 0;
+		}
+		else
+		{
+			::PostQuitMessage(0);
+		}
+		break;
+	case 2://승리
+		if (MessageBox(hWnd, L"승리하였습니다! 다시하시겠습니까?", L"게임 끝", MB_YESNO) == IDYES)
+		{
+			GameCheck = 0;
+		}
+		else
+		{
+			::PostQuitMessage(0);
+		}
+		break;
+	}
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CAirplanePlayer
 
@@ -411,7 +445,27 @@ void CAirplanePlayer::OnCameraUpdateCallback(float fTimeElapsed)
 
 void CAirplanePlayer::FireMissile(CShader* Missilesprite, float time)
 {
-	if (m_pMissileDuringtime < m_pMissileTotaltime)
+	if (m_pMissileState == true && !Missilesprite->GetActive())//미사일이 나가고 있을 때
+	{
+		m_pMissileTotaltime += time;
+		m_pHellfire_MissileFrame->MoveForward(time * 200.f);
+		m_BulletOOBB_parent.Transform(m_BulletOOBB_object, XMLoadFloat4x4(&m_pHellfire_MissileFrame->m_xmf4x4World));
+		XMStoreFloat4(&m_BulletOOBB_object.Orientation, XMQuaternionNormalize(XMLoadFloat4(&m_BulletOOBB_object.Orientation)));
+	}
+	else if (Missilesprite->GetActive() && !m_pMissileState) // 스트라이트가 나가고 있는 중에
+	{
+		m_pHellfire_MissileFrame->m_xmf4x4Transform = this->m_xmf4x4World;
+		m_pHellfire_MissileFrame->SetScale(3.0, 3.0, 3.0);
+		return ;
+	}
+	else if(Missilesprite->GetActive()&&m_pMissileState)//스프라이트도 다 나갔을 때
+	{
+		m_pHellfire_MissileFrame->m_xmf4x4Transform = this->m_xmf4x4World;
+		m_pHellfire_MissileFrame->SetScale(3.0, 3.0, 3.0);
+		return;
+	}
+
+	if (m_pMissileDuringtime < m_pMissileTotaltime)//미사일이 다 나가고 스프라이트가 나오고 있을 때
 	{
 		Missilesprite->SetActive(!Missilesprite->GetActive());
 		m_pMissileTotaltime = 0.0f;
@@ -423,22 +477,5 @@ void CAirplanePlayer::FireMissile(CShader* Missilesprite, float time)
 		}
 
 		m_pMissileState = false;
-	}
-	if (m_pMissileState == true && !Missilesprite->GetActive())
-	{
-		m_pMissileTotaltime += time;
-		m_pHellfire_MissileFrame->MoveForward(time * 20.f);
-	}
-	else if (Missilesprite->GetActive() && !m_pMissileState)
-	{
-
-		m_pHellfire_MissileFrame->m_xmf4x4Transform = this->m_xmf4x4World;
-		m_pHellfire_MissileFrame->SetScale(3.0, 3.0, 3.0);
-	}
-	else if(!Missilesprite->GetActive()&&!m_pMissileState)
-	{
-
-		m_pHellfire_MissileFrame->m_xmf4x4Transform = this->m_xmf4x4World;
-		m_pHellfire_MissileFrame->SetScale(3.0, 3.0, 3.0);
 	}
 }

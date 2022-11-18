@@ -61,6 +61,10 @@ public:
     void AnimateObjects(float fTimeElapsed);
     void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL);
 
+	void CheckPlayerByObjectCollisions();
+	void CheckObjectByBulletCollisions();
+	void ObjectTravel(float fTimeElapsed);
+
 	void ReleaseUploadBuffers();
 	CHeightMapTerrain* GetTerrain() { return(m_pTerrain); }
 	CPlayer								*m_pPlayer = NULL;

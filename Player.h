@@ -34,11 +34,12 @@ protected:
 	CCamera						*m_pCamera = NULL;
 
 	CShader						*m_pShader = NULL;
-
 public:
 	CPlayer();
 	virtual ~CPlayer();
 
+	int								GameCheck = 0;
+	void EndGame(HWND hWnd);
 	XMFLOAT3 GetPosition() { return(m_xmf3Position); }
 	XMFLOAT3 GetLookVector() { return(m_xmf3Look); }
 	XMFLOAT3 GetUpVector() { return(m_xmf3Up); }

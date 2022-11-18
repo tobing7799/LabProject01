@@ -96,7 +96,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	CMultiSpriteObjectsShader* pMultiSpriteObjectShader = new CMultiSpriteObjectsShader();
 	pMultiSpriteObjectShader->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
 	pMultiSpriteObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pTerrain);
-	pMultiSpriteObjectShader->SetActive(false);
+	pMultiSpriteObjectShader->SetActive(true);
 	m_ppShaders[3] = pMultiSpriteObjectShader;
 
 
@@ -410,13 +410,6 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		/*case 'W': m_ppGameObjects[0]->MoveForward(+1.0f); break;
-		case 'S': m_ppGameObjects[0]->MoveForward(-1.0f); break;
-		case 'A': m_ppGameObjects[0]->MoveStrafe(-1.0f); break;
-		case 'D': m_ppGameObjects[0]->MoveStrafe(+1.0f); break;
-		case 'Q': m_ppGameObjects[0]->MoveUp(+1.0f); break;
-		case 'R': m_ppGameObjects[0]->MoveUp(-1.0f); break;*/
-
 		case 'r':
 		case 'R':
 			std::cout << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().x << "  " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().y << "    " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().z << std::endl;
@@ -428,8 +421,8 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 				if (m_ppShaders[3]->GetActive())
 				{
 					m_ppShaders[3]->SetActive(!m_ppShaders[3]->GetActive());
+					((CAirplanePlayer*)m_pPlayer)->m_pMissileState = true;
 				}
-				((CAirplanePlayer*)m_pPlayer)->m_pMissileState = true;
 			}
 			//std::cout << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().x << "  " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().y << "    " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().z << std::endl;
 			break;
@@ -450,18 +443,35 @@ bool CScene::ProcessInput(UCHAR *pKeysBuffer)
 
 void CScene::AnimateObjects(float fTimeElapsed)
 {
-	((CAirplanePlayer*)m_pPlayer)->FireMissile(m_ppShaders[3],fTimeElapsed);
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->Animate(fTimeElapsed, NULL);
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->UpdateTransform(NULL);
 
 	for (int i = 0; i < m_nShaders; i++)
+	{
+		if (i == 0)
+		{
+			if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_Alive == false)
+			{
+				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Rotate(30.f* fTimeElapsed, 70.f* fTimeElapsed, 20.f* fTimeElapsed);
+				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->MoveUp(-20.f * fTimeElapsed);
+				if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->GetPosition().y<60.0f)
+				{
+					((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_RenderEnable = false;
+				}
+			}
+		}
 		if (m_ppShaders[i]) m_ppShaders[i]->AnimateObjects(fTimeElapsed);
-	
+	}
 	if (m_pLights)
 	{
 		m_pLights[1].m_xmf3Position = m_pPlayer->GetPosition();
 		m_pLights[1].m_xmf3Direction = m_pPlayer->GetLookVector();
 	}
+
+	((CAirplanePlayer*)m_pPlayer)->FireMissile(m_ppShaders[3],fTimeElapsed);
+	CheckPlayerByObjectCollisions();
+	CheckObjectByBulletCollisions();
+	ObjectTravel(fTimeElapsed);
 }
 
 void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
@@ -484,7 +494,84 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 			m_ppGameObjects[i]->Render(pd3dCommandList, pCamera);
 
 	for (int i = 0; i < m_nShaders; i++)
-		if (m_ppShaders[i])
-			m_ppShaders[i]->Render(pd3dCommandList, pCamera);
+	{
+		if (i == 0)
+		{
+			for (int i = 0; i < ((CObjectsShader*)m_ppShaders[0])->m_nObjects; ++i)
+			{
+				if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_RenderEnable)
+				{
+					m_ppShaders[i]->Render(pd3dCommandList, pCamera);
+				}
+			}
+		}
+		else if (m_ppShaders[i]) m_ppShaders[i]->Render(pd3dCommandList, pCamera);
+	}
 }
 
+void CScene::CheckPlayerByObjectCollisions()
+{
+	for (int i = 0; i < ((CObjectsShader*)m_ppShaders[0])->m_nObjects; ++i)
+	{
+		if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_Alive)
+		{
+			if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_xmOOBB_object.Intersects(m_pPlayer->m_xmOOBB_object))
+			{
+				m_pPlayer->GameCheck = 1;
+			}
+		}
+	}
+
+}
+
+void CScene::CheckObjectByBulletCollisions()
+{
+	for (int i = 0; i < ((CObjectsShader*)m_ppShaders[0])->m_nObjects; ++i)
+	{
+		if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_Alive)
+		{
+			if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_xmOOBB_object.Intersects(m_pPlayer->m_BulletOOBB_object))
+			{
+				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_Alive = false;
+				((CAirplanePlayer*)m_pPlayer)->m_pMissileTotaltime = 3.0f;
+			}
+		}
+	}
+
+}
+
+void CScene::ObjectTravel(float fTimeElapsed)
+{
+	for (int i = 0; i < ((CObjectsShader*)m_ppShaders[0])->m_nObjects; ++i)
+	{
+		if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_Alive)
+		{
+			if (Vector3::Length((Vector3::Subtract(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Travelpath[(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Flightcount + 1) % (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Travelpath.size())], ((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->GetPosition()))) < 10.0f)
+			{
+				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Flightcount++;
+				if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Flightcount == 5)
+				{
+					m_pPlayer->GameCheck = 1;
+					return;
+				}
+			}
+			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->LookTo(Vector3::Normalize(Vector3::Subtract(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Travelpath[(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Flightcount + 1) % (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Travelpath.size())],
+			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->GetPosition())), ((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->GetUp());
+			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->MoveForward(10.0f* fTimeElapsed);
+		}
+		else if (!(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_Alive) && !(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_RenderEnable))
+		{
+			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Flightcount--;
+			if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Flightcount > 0)
+			{
+				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_Alive = true;
+				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_RenderEnable = true;
+				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->SetPosition(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Travelpath[((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Flightcount]);
+			}
+			else
+			{
+				m_pPlayer->GameCheck = 2;
+			}
+		}
+	}
+}
