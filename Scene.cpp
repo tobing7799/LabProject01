@@ -410,9 +410,6 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		case 'r':
-		case 'R':
-			std::cout << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().x << "  " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().y << "    " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().z << std::endl;
 			break;
 		case 'f':
 		case 'F':
@@ -424,7 +421,6 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 					((CAirplanePlayer*)m_pPlayer)->m_pMissileState = true;
 				}
 			}
-			//std::cout << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().x << "  " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().y << "    " << ((CAirplanePlayer*)m_pPlayer)->m_pHellfire_MissileFrame->GetPosition().z << std::endl;
 			break;
 		default:
 			break;
@@ -557,7 +553,7 @@ void CScene::ObjectTravel(float fTimeElapsed)
 			}
 			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->LookTo(Vector3::Normalize(Vector3::Subtract(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Travelpath[(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Flightcount + 1) % (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Travelpath.size())],
 			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->GetPosition())), ((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->GetUp());
-			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->MoveForward(10.0f* fTimeElapsed);
+			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->MoveForward(40.0f* fTimeElapsed);
 		}
 		else if (!(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_Alive) && !(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_RenderEnable))
 		{
@@ -567,6 +563,7 @@ void CScene::ObjectTravel(float fTimeElapsed)
 				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_Alive = true;
 				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_RenderEnable = true;
 				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->SetPosition(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Travelpath[((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Flightcount]);
+				((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->LookTo(XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
 			}
 			else
 			{
