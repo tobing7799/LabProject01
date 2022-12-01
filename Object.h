@@ -25,6 +25,9 @@ class CStandardShader;
 #define RESOURCE_TEXTURE_CUBE		0x04
 #define RESOURCE_BUFFER				0x05
 
+#define RESOURCE_TEXTURE1D			0x06
+#define RESOURCE_STRUCTURED_BUFFER	0x07
+
 class CGameObject;
 
 struct MATERIAL
@@ -63,6 +66,7 @@ private:
 
 	DXGI_FORMAT*					m_pdxgiBufferFormats = NULL;
 	int*							m_pnBufferElements = NULL;
+	int*							m_pnBufferStrides = NULL;
 
 	int								m_nRootParameters = 0;
 	int*							m_pnRootParameterIndices = NULL;
@@ -98,6 +102,7 @@ public:
 	int LoadTextureFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CGameObject* pParent, FILE* pInFile, CShader* pShader, UINT nIndex);
 
 	void SetRootParameterIndex(int nIndex, UINT nRootParameterIndex);
+	int GetRootParameterIndex(int nIndex) { return(m_pnRootParameterIndices[nIndex]); }
 	void SetGpuDescriptorHandle(int nIndex, D3D12_GPU_DESCRIPTOR_HANDLE d3dSrvGpuDescriptorHandle);
 
 	int GetRootParameters() { return(m_nRootParameters); }
@@ -117,6 +122,10 @@ public:
 	void ReleaseUploadBuffers();
 
 	bool AnimateRowColumn(float fTime = 0.0f);
+
+	void CreateBuffer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pData, UINT nElements, UINT nStride, DXGI_FORMAT dxgiFormat, D3D12_HEAP_TYPE d3dHeapType, D3D12_RESOURCE_STATES d3dResourceStates, UINT nIndex);
+
+	void CreateTexture(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pData, UINT nBytes, UINT nResourceType, UINT nWidth, UINT nHeight, UINT nDepthOrArraySize, UINT nMipLevels, D3D12_RESOURCE_FLAGS d3dResourceFlags, DXGI_FORMAT dxgiFormat, UINT nIndex);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -228,16 +237,17 @@ public:
 	bool								m_Alive = true;
 	bool								m_RenderEnable = true;
 
-//	ID3D12Resource* m_pd3dcbGameObject = NULL;
-//	CB_GAMEOBJECT_INFO* m_pcbMappedGameObject = NULL;
+	ID3D12Resource* m_pd3dcbGameObject = NULL;
+	CB_GAMEOBJECT_INFO* m_pcbMappedGameObject = NULL;
 
 
 //	virtual void SetMesh(CMesh *pMesh);
 	virtual void SetMesh(int nIndex, CMesh* pMesh);
-//	void SetShader(CShader *pShader);
+	void SetShader(CShader *pShader);
 	void SetShader(int nMaterial, CShader *pShader);
 	virtual void SetMaterial(int nMaterial, CMaterial *pMaterial);
-//	virtual void SetMaterial(CMaterial *pMaterial);
+	virtual void SetMaterial(CMaterial *pMaterial);
+	void SetTexture(CTexture* pTexture);
 
 	void UpdateBoundingBox();
 	void LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up);
@@ -293,6 +303,13 @@ public:
 
 	void SetLookAt(XMFLOAT3& xmf3Target, XMFLOAT3& xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f));
 	//void SetCbvGPUDescriptorHandlePtr(UINT64 nCbvGPUDescriptorHandlePtr) { m_d3dCbvGPUDescriptorHandle.ptr = nCbvGPUDescriptorHandlePtr; }
+
+	D3D12_GPU_DESCRIPTOR_HANDLE GetCbvGPUDescriptorHandle() { return(m_d3dCbvGPUDescriptorHandle); }
+	virtual void Animate(CCamera* pCamera, float fDeltaTime);
+	virtual void OnPostRender() { }
+	virtual void OnPreRender() { }
+
+
 public:
 	void LoadMaterialsFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, CGameObject *pParent, FILE *pInFile, CShader *pShader);
 
@@ -424,5 +441,31 @@ public:
 	float m_fTime = 0.0f;
 
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+};
+
+class CBillboardObject : public CGameObject
+{
+public:
+	CBillboardObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, float fWidth, float fHeight);
+	virtual ~CBillboardObject();
+
+	virtual void Animate(CCamera* pCamera, float fDeltaTime);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+class CParticleObject : public CGameObject
+{
+public:
+	CParticleObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, XMFLOAT3 xmf3Position, XMFLOAT3 xmf3Velocity, float fLifetime, XMFLOAT3 xmf3Acceleration, XMFLOAT3 xmf3Color, XMFLOAT2 xmf2Size, UINT nMaxParticles);
+	virtual ~CParticleObject();
+
+	CTexture* m_pRandowmValueTexture = NULL;
+	CTexture* m_pRandowmValueOnSphereTexture = NULL;
+
+	void ReleaseUploadBuffers();
+
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	virtual void OnPostRender();
 };
 

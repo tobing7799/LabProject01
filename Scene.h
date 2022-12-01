@@ -65,6 +65,10 @@ public:
 	void CheckObjectByBulletCollisions();
 	void ObjectTravel(float fTimeElapsed);
 
+	void RenderParticle(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	void OnPostRenderParticle();
+	void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+
 	void ReleaseUploadBuffers();
 	CHeightMapTerrain* GetTerrain() { return(m_pTerrain); }
 	CPlayer								*m_pPlayer = NULL;
@@ -89,4 +93,7 @@ public:
 
 	ID3D12Resource						*m_pd3dcbLights = NULL;
 	LIGHTS								*m_pcbMappedLights = NULL;
+
+	CParticleObject** m_ppParticleObjects = NULL;
+	int							m_nParticleObjects = 0;
 };
