@@ -125,6 +125,15 @@ protected:
 	UINT							m_nStartIndex = 0;
 	int								m_nBaseVertex = 0;
 
+	ID3D12Resource* m_pd3dVertexBuffer = NULL;
+	ID3D12Resource* m_pd3dVertexUploadBuffer = NULL;
+
+	ID3D12Resource* m_pd3dIndexBuffer = NULL;
+	ID3D12Resource* m_pd3dIndexUploadBuffer = NULL;
+
+	D3D12_VERTEX_BUFFER_VIEW		m_d3dVertexBufferView;
+	D3D12_INDEX_BUFFER_VIEW			m_d3dIndexBufferView;
+
 protected:
 
 	XMFLOAT3						*m_pxmf3Positions = NULL;
@@ -140,16 +149,6 @@ protected:
 	ID3D12Resource					**m_ppd3dSubSetIndexBuffers = NULL;
 	ID3D12Resource					**m_ppd3dSubSetIndexUploadBuffers = NULL;
 	D3D12_INDEX_BUFFER_VIEW			*m_pd3dSubSetIndexBufferViews = NULL;
-
-
-	ID3D12Resource* m_pd3dVertexBuffer = NULL;
-	ID3D12Resource* m_pd3dVertexUploadBuffer = NULL;
-
-	ID3D12Resource* m_pd3dIndexBuffer = NULL;
-	ID3D12Resource* m_pd3dIndexUploadBuffer = NULL;
-
-	D3D12_VERTEX_BUFFER_VIEW		m_d3dVertexBufferView;
-	D3D12_INDEX_BUFFER_VIEW			m_d3dIndexBufferView;
 
 
 public:
