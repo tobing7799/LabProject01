@@ -57,7 +57,8 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	CoInitialize(NULL);
 
 	BuildObjects();
-	m_pPlayer->SetPosition(XMFLOAT3(400.0f, 100.0f, 400.0f));
+	//m_pPlayer->SetPosition(XMFLOAT3(400.0f, 100.0f, 400.0f));
+	m_pPlayer->SetPosition(XMFLOAT3(-1000.0f, 0.0f, -1000.0f));
 	return(true);
 }
 
@@ -74,7 +75,7 @@ void CGameFramework::CreateSwapChain()
 	dxgiSwapChainDesc.Width = m_nWndClientWidth;
 	dxgiSwapChainDesc.Height = m_nWndClientHeight;
 	dxgiSwapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	dxgiSwapChainDesc.SampleDesc.Count = (m_bMsaa4xEnable) ? 4 : 1;
+	dxgiSwapChainDesc.Desc.Count = (m_bMsaa4xEnable) ? 4 : 1;
 	dxgiSwapChainDesc.SampleDesc.Quality = (m_bMsaa4xEnable) ? (m_nMsaa4xQualityLevels - 1) : 0;
 	dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	dxgiSwapChainDesc.BufferCount = m_nSwapChainBuffers;
@@ -402,7 +403,7 @@ void CGameFramework::OnDestroy()
 void CGameFramework::CreateShaderVariables()
 {
 	UINT ncbElementBytes = ((sizeof(CB_FRAMEWORK_INFO) + 255) & ~255); //256ÀÇ ¹è¼ö
-	m_pd3dcbFrameworkInfo = ::CreateBufferResource(m_pd3dDevice, m_pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_GENERIC_READ, NULL);
+	m_pd3dcbFrameworkInfo = ::CreateBufferResource(m_pd3dDevice, m_pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_GENERIC_READ, NULL,0);
 	m_pd3dcbFrameworkInfo->Map(0, NULL, (void**)&m_pcbMappedFrameworkInfo);
 }
 
@@ -456,6 +457,7 @@ void CGameFramework::BuildObjects()
 
 void CGameFramework::ReleaseObjects()
 {
+	ReleaseShaderVariables();
 	if (m_pPlayer) m_pPlayer->Release();
 
 	if (m_pScene) m_pScene->ReleaseObjects();

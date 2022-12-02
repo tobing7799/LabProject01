@@ -399,61 +399,63 @@ VS_PARTICLE_INPUT VSParticleStreamOutput(VS_PARTICLE_INPUT input)
 	return(input);
 }
 
-float3 GetParticleColor(float fAge, float fLifetime)
-{
-	float3 cColor = float3(1.0f, 1.0f, 1.0f);
+//float3 GetParticleColor(float fAge, float fLifetime)
+//{
+//	float3 cColor = float3(1.0f, 1.0f, 1.0f);
+//
+//	if (fAge == 0.0f) cColor = float3(0.0f, 1.0f, 0.0f);
+//	else if (fLifetime == 0.0f)
+//		cColor = float3(1.0f, 1.0f, 0.0f);
+//	else
+//	{
+//		float t = fAge / fLifetime;
+//		cColor = lerp(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, 1.0f), t * 1.0f);
+//	}
+//
+//	return(cColor);
+//}
 
-	if (fAge == 0.0f) cColor = float3(0.0f, 1.0f, 0.0f);
-	else if (fLifetime == 0.0f)
-		cColor = float3(1.0f, 1.0f, 0.0f);
-	else
-	{
-		float t = fAge / fLifetime;
-		cColor = lerp(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, 1.0f), t * 1.0f);
-	}
-
-	return(cColor);
-}
-
-void GetBillboardCorners(float3 position, float2 size, out float4 pf4Positions[4])
-{
-	float3 f3Up = float3(0.0f, 1.0f, 0.0f);
-	float3 f3Look = normalize(gvCameraPosition - position);
-	float3 f3Right = normalize(cross(f3Up, f3Look));
-
-	pf4Positions[0] = float4(position + size.x * f3Right - size.y * f3Up, 1.0f);
-	pf4Positions[1] = float4(position + size.x * f3Right + size.y * f3Up, 1.0f);
-	pf4Positions[2] = float4(position - size.x * f3Right - size.y * f3Up, 1.0f);
-	pf4Positions[3] = float4(position - size.x * f3Right + size.y * f3Up, 1.0f);
-}
-
-void GetPositions(float3 position, float2 f2Size, out float3 pf3Positions[8])
-{
-	float3 f3Right = float3(1.0f, 0.0f, 0.0f);
-	float3 f3Up = float3(0.0f, 1.0f, 0.0f);
-	float3 f3Look = float3(0.0f, 0.0f, 1.0f);
-
-	float3 f3Extent = normalize(float3(1.0f, 1.0f, 1.0f));
-
-	pf3Positions[0] = position + float3(-f2Size.x, 0.0f, -f2Size.y);
-	pf3Positions[1] = position + float3(-f2Size.x, 0.0f, +f2Size.y);
-	pf3Positions[2] = position + float3(+f2Size.x, 0.0f, -f2Size.y);
-	pf3Positions[3] = position + float3(+f2Size.x, 0.0f, +f2Size.y);
-	pf3Positions[4] = position + float3(-f2Size.x, 0.0f, 0.0f);
-	pf3Positions[5] = position + float3(+f2Size.x, 0.0f, 0.0f);
-	pf3Positions[6] = position + float3(0.0f, 0.0f, +f2Size.y);
-	pf3Positions[7] = position + float3(0.0f, 0.0f, -f2Size.y);
-}
+//void GetBillboardCorners(float3 position, float2 size, out float4 pf4Positions[4])
+//{
+//	float3 f3Up = float3(0.0f, 1.0f, 0.0f);
+//	float3 f3Look = normalize(gvCameraPosition - position);
+//	float3 f3Right = normalize(cross(f3Up, f3Look));
+//
+//	pf4Positions[0] = float4(position + size.x * f3Right - size.y * f3Up, 1.0f);
+//	pf4Positions[1] = float4(position + size.x * f3Right + size.y * f3Up, 1.0f);
+//	pf4Positions[2] = float4(position - size.x * f3Right - size.y * f3Up, 1.0f);
+//	pf4Positions[3] = float4(position - size.x * f3Right + size.y * f3Up, 1.0f);
+//}
+//
+//void GetPositions(float3 position, float2 f2Size, out float3 pf3Positions[8])
+//{
+//	float3 f3Right = float3(1.0f, 0.0f, 0.0f);
+//	float3 f3Up = float3(0.0f, 1.0f, 0.0f);
+//	float3 f3Look = float3(0.0f, 0.0f, 1.0f);
+//
+//	float3 f3Extent = normalize(float3(1.0f, 1.0f, 1.0f));
+//
+//	pf3Positions[0] = position + float3(-f2Size.x, 0.0f, -f2Size.y);
+//	pf3Positions[1] = position + float3(-f2Size.x, 0.0f, +f2Size.y);
+//	pf3Positions[2] = position + float3(+f2Size.x, 0.0f, -f2Size.y);
+//	pf3Positions[3] = position + float3(+f2Size.x, 0.0f, +f2Size.y);
+//	pf3Positions[4] = position + float3(-f2Size.x, 0.0f, 0.0f);
+//	pf3Positions[5] = position + float3(+f2Size.x, 0.0f, 0.0f);
+//	pf3Positions[6] = position + float3(0.0f, 0.0f, +f2Size.y);
+//	pf3Positions[7] = position + float3(0.0f, 0.0f, -f2Size.y);
+//}
 
 float4 RandomDirection(float fOffset)
 {
 	int u = uint(gfCurrentTime + fOffset + frac(gfCurrentTime) * 1000.0f) % 1024;
+	//int u = 0;
 	return(normalize(gRandomBuffer.Load(u)));
 }
 
 float4 RandomDirectionOnSphere(float fOffset)
 {
 	int u = uint(gfCurrentTime + fOffset + frac(gfCurrentTime) * 1000.0f) % 256;
+	//int u = 0;
 	return(normalize(gRandomSphereBuffer.Load(u)));
 }
 
@@ -628,6 +630,5 @@ float4 PSParticleDraw(GS_PARTICLE_DRAW_OUTPUT input) : SV_TARGET
 {
 	float4 cColor = gtxtParticleTexture.Sample(gWrapSamplerState, input.uv);
 	cColor *= input.color;
-	cColor = float4(1.0f, 1.0f, 1.0f,1.0f);
 	return(cColor);
 }
