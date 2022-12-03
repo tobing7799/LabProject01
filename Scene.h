@@ -37,6 +37,11 @@ struct LIGHTS
 	int						m_nLights;
 };
 
+struct MATERIALS
+{
+	MATERIAL				m_pReflections[MAX_MATERIALS];
+};
+
 class CScene
 {
 public:
@@ -56,6 +61,7 @@ public:
 
 	ID3D12RootSignature *CreateGraphicsRootSignature(ID3D12Device *pd3dDevice);
 	ID3D12RootSignature *GetGraphicsRootSignature() { return(m_pd3dGraphicsRootSignature); }
+	void SetGraphicsRootSignature(ID3D12GraphicsCommandList* pd3dCommandList) { pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature); }
 
 	bool ProcessInput(UCHAR *pKeysBuffer);
     void AnimateObjects(float fTimeElapsed);
@@ -68,6 +74,9 @@ public:
 	void RenderParticle(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
 	void OnPostRenderParticle();
 	void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);
+
+	void OnPreRender(ID3D12Device* pd3dDevice, ID3D12CommandQueue* pd3dCommandQueue, ID3D12Fence* pd3dFence, HANDLE hFenceEvent);
 
 	void ReleaseUploadBuffers();
 	CHeightMapTerrain* GetTerrain() { return(m_pTerrain); }
@@ -96,4 +105,12 @@ public:
 
 	CParticleObject** m_ppParticleObjects = NULL;
 	int							m_nParticleObjects = 0;
+
+	ID3D12Resource* m_pd3dcbMaterials = NULL;
+	MATERIAL* m_pcbMappedMaterials = NULL;
+
+	CDynamicCubeMappingShader** m_ppEnvironmentMappingShaders = NULL;
+	int							m_nEnvironmentMappingShaders = 0;
+
+	MATERIALS* m_pMaterials = NULL;
 };

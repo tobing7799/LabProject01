@@ -15,6 +15,7 @@
 #define DIR_DOWN					0x20
 
 class CShader;
+class CScene;
 class CStandardShader;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,14 +38,15 @@ struct MATERIAL
 	XMFLOAT4						m_xmf4Specular; //(r,g,b,a=power)
 	XMFLOAT4						m_xmf4Emissive;
 };
+
 struct CB_GAMEOBJECT_INFO
 {
 	XMFLOAT4X4						m_xmf4x4World;
-	MATERIAL						m_material;
 
 	XMFLOAT4X4						m_xmf4x4Texture;
 	XMINT2							m_xmi2TextureTiling;
 	XMFLOAT2						m_xmf2TextureOffset;
+	UINT							m_nMaterial;
 };
 class CTexture
 {
@@ -98,7 +100,7 @@ public:
 	void LoadTextureFromDDSFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const wchar_t* pszFileName, UINT nResourceType, UINT nIndex);
 	void LoadBuffer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pData, UINT nElements, UINT nStride, DXGI_FORMAT ndxgiFormat, UINT nIndex);
 	ID3D12Resource* CreateTexture(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, UINT nIndex, UINT nResourceType, UINT nWidth, UINT nHeight, UINT nElements, UINT nMipLevels, DXGI_FORMAT dxgiFormat, D3D12_RESOURCE_FLAGS d3dResourceFlags, D3D12_RESOURCE_STATES d3dResourceStates, D3D12_CLEAR_VALUE* pd3dClearValue);
-
+	ID3D12Resource* CreateTexture(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, UINT nWidth, UINT nHeight, UINT nElements, UINT nMipLevels, DXGI_FORMAT dxgiFormat, D3D12_RESOURCE_FLAGS d3dResourceFlags, D3D12_RESOURCE_STATES d3dResourceStates, D3D12_CLEAR_VALUE* pd3dClearValue, UINT nResourceType, UINT nIndex);
 	int LoadTextureFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CGameObject* pParent, FILE* pInFile, CShader* pShader, UINT nIndex);
 
 	void SetRootParameterIndex(int nIndex, UINT nRootParameterIndex);
@@ -162,9 +164,14 @@ public:
 	XMFLOAT4						m_xmf4SpecularColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	XMFLOAT4						m_xmf4AmbientColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 
+	UINT							m_nReflection = 0;
+	MATERIAL* m_pReflection = NULL;
+
 	void SetShader(CShader *pShader);
 	void SetMaterialType(UINT nType) { m_nType |= nType; }
 	void SetTexture(CTexture* pTexture);
+	void SetReflection(UINT nReflection) { m_nReflection = nReflection; }
+	void SetReflection(MATERIAL* m_pReflection);
 
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList);
 	virtual void ReleaseShaderVariables();
@@ -259,6 +266,7 @@ public:
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent=NULL);
 
 	virtual void OnPrepareRender() { }
+	virtual void OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList, CScene* pScene) { }
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL);
 //	virtual void TerrainRender(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL);
 
@@ -467,5 +475,23 @@ public:
 
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
 	virtual void OnPostRender();
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+class CDynamicCubeMappingObject : public CGameObject
+{
+public:
+	CDynamicCubeMappingObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, LONG nCubeMapSize, D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle, D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle, CShader* pShader);
+	virtual ~CDynamicCubeMappingObject();
+
+	virtual void OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList, CScene* pScene);
+
+	CCamera* m_ppCameras[6];
+
+	D3D12_CPU_DESCRIPTOR_HANDLE		m_pd3dRtvCPUDescriptorHandles[6];
+
+	ID3D12Resource* m_pd3dDepthStencilBuffer = NULL;
+	D3D12_CPU_DESCRIPTOR_HANDLE		m_d3dDsvCPUDescriptorHandle;
 };
 

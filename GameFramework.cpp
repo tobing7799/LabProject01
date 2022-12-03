@@ -58,7 +58,7 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 
 	BuildObjects();
 	//m_pPlayer->SetPosition(XMFLOAT3(400.0f, 100.0f, 400.0f));
-	m_pPlayer->SetPosition(XMFLOAT3(-1000.0f, 0.0f, -1000.0f));
+	m_pPlayer->SetPosition(XMFLOAT3(-100.0f, 0.0f, -100.0f));
 	return(true);
 }
 

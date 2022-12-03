@@ -1,15 +1,3 @@
-struct MATERIAL
-{
-	float4					m_cAmbient;
-	float4					m_cDiffuse;
-	float4					m_cSpecular; //a = power
-	float4					m_cEmissive;
-
-	//matrix				gmtxTexture;
-	//int2				gi2TextureTiling;
-	//float2				gf2TextureOffset;
-};
-
 struct TEXTURE
 {
 	float4				gtexture;
@@ -30,10 +18,11 @@ cbuffer cbCameraInfo : register(b1)
 cbuffer cbGameObjectInfo : register(b2)
 {
 	matrix		gmtxGameObject : packoffset(c0);
-	MATERIAL	gMaterial : packoffset(c4);
-	TEXTURE		gtexture : packoffset(c8);
-	uint		gnTexturesMask : packoffset(c10);
+	TEXTURE		gtexture : packoffset(c4);
+	uint		gnTexturesMask : packoffset(c8);
+	uint		gnMaterialID : packoffset(c9);
 };
+
 
 cbuffer cbFrameworkInfo : register(b5)
 {
@@ -631,4 +620,47 @@ float4 PSParticleDraw(GS_PARTICLE_DRAW_OUTPUT input) : SV_TARGET
 	float4 cColor = gtxtParticleTexture.Sample(gWrapSamplerState, input.uv);
 	cColor *= input.color;
 	return(cColor);
+}
+
+struct VS_LIGHTING_INPUT
+{
+	float3	position    : POSITION;
+	float3	normal		: NORMAL;
+};
+
+struct VS_LIGHTING_OUTPUT
+{
+	float4	position    : SV_POSITION;
+	float3	positionW   : POSITION;
+	float3	normalW		: NORMAL;
+};
+
+VS_LIGHTING_OUTPUT VSCubeMapping(VS_LIGHTING_INPUT input)
+{
+	VS_LIGHTING_OUTPUT output;
+
+	output.positionW = mul(float4(input.position, 1.0f), gmtxGameObject).xyz;
+	//	output.positionW = (float3)mul(float4(input.position, 1.0f), gmtxGameObject);
+	output.normalW = mul(float4(input.normal, 0.0f), gmtxGameObject).xyz;
+	//	output.normalW = mul(input.normal, (float3x3)gmtxGameObject);
+	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
+
+	return(output);
+}
+
+TextureCube gtxtCubeMap : register(t17);
+
+float4 PSCubeMapping(VS_LIGHTING_OUTPUT input) : SV_Target
+{
+	input.normalW = normalize(input.normalW);
+
+	float4 cIllumination = Lighting(input.positionW, input.normalW);
+
+	float3 vFromCamera = normalize(input.positionW - gvCameraPosition.xyz);
+	float3 vReflected = normalize(reflect(vFromCamera, input.normalW));
+	float4 cCubeTextureColor = gtxtCubeMap.Sample(gWrapSamplerState, vReflected);
+
+	//	return(float4(vReflected * 0.5f + 0.5f, 1.0f));
+		return(cCubeTextureColor);
+		//	return(cIllumination * cCubeTextureColor);
 }

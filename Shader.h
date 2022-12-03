@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "Timer.h"
 
+
 class CShader
 {
 public:
@@ -23,6 +24,7 @@ protected:
 
 	int									m_nPipelineStates = 0;
 	ID3D12PipelineState**				m_ppd3dPipelineStates = NULL;
+	ID3D12RootSignature* m_pd3dGraphicsRootSignature = NULL;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC	m_d3dPipelineStateDesc;
 
@@ -68,6 +70,7 @@ public:
 	virtual void UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList, XMFLOAT4X4 *pxmf4x4World) { }
 
 	virtual void OnPrepareRender(ID3D12GraphicsCommandList *pd3dCommandList, int nPipelineState=0);
+	virtual void OnPreRender(ID3D12Device* pd3dDevice, ID3D12CommandQueue* pd3dCommandQueue, ID3D12Fence* pd3dFence, HANDLE hFenceEvent, CScene* pScene) { }
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera, int nPipelineState=0);
 
 	virtual void ReleaseUploadBuffers() { }
@@ -150,6 +153,7 @@ public:
 	virtual ~CObjectsShader();
 
 	virtual void CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual void BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext = NULL);
 	virtual void AnimateObjects(float fTimeElapsed);
 	virtual void ReleaseObjects();
@@ -163,6 +167,7 @@ public:
 protected:
 
 	ID3D12Resource* m_pd3dcbGameObjects = NULL;
+	CB_GAMEOBJECT_INFO* m_pcbMappedGameObjects = NULL;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,7 +187,7 @@ public:
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-class CTexturedShader : public CShader
+class CTexturedShader : public CObjectsShader
 {
 public:
 	CTexturedShader();
@@ -312,3 +317,30 @@ public:
 	virtual void CreateGraphicsPipelineState(ID3D12Device* pd3dDevice, ID3D12RootSignature* pd3dGraphicsRootSignature, int nPipelineState);
 };
 
+class CDynamicCubeMappingShader : public CTexturedShader
+{
+public:
+	CDynamicCubeMappingShader(UINT nCubeMapSize = 256);
+	virtual ~CDynamicCubeMappingShader();
+
+	virtual D3D12_INPUT_LAYOUT_DESC CreateInputLayout();
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader(ID3DBlob** ppd3dShaderBlob);
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader(ID3DBlob** ppd3dShaderBlob);
+
+	virtual void BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pContext = NULL);
+	virtual void ReleaseObjects();
+
+	virtual void CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* pd3dGraphicsRootSignature);
+	virtual void ReleaseUploadBuffers();
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	virtual void OnPreRender(ID3D12Device* pd3dDevice, ID3D12CommandQueue* pd3dCommandQueue, ID3D12Fence* pd3dFence, HANDLE hFenceEvent, CScene* pScene);
+
+protected:
+	ULONG							m_nCubeMapSize = 256;
+
+	ID3D12CommandAllocator* m_pd3dCommandAllocator = NULL;
+	ID3D12GraphicsCommandList* m_pd3dCommandList = NULL;
+
+	ID3D12DescriptorHeap* m_pd3dRtvDescriptorHeap = NULL;
+	ID3D12DescriptorHeap* m_pd3dDsvDescriptorHeap = NULL;
+};
