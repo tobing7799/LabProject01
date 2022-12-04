@@ -158,6 +158,9 @@ public:
 
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera, int nPipelineState=0);
 
+	const float GetObjectNum() { return m_nObjects; };
+	CGameObject** GetppObject() { return m_ppObjects; };
+
 	CGameObject						**m_ppObjects = 0;
 	int								m_nObjects = 0;
 protected:
@@ -312,3 +315,33 @@ public:
 	virtual void CreateGraphicsPipelineState(ID3D12Device* pd3dDevice, ID3D12RootSignature* pd3dGraphicsRootSignature, int nPipelineState);
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+class CDynamicCubeMappingShader : public CObjectsShader
+{
+public:
+	CDynamicCubeMappingShader(UINT nCubeMapSize = 256);
+	virtual ~CDynamicCubeMappingShader();
+
+	virtual D3D12_INPUT_LAYOUT_DESC CreateInputLayout();
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader();
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader();
+
+	virtual void BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pContext = NULL);
+	virtual void ReleaseObjects();
+
+	virtual void ReleaseUploadBuffers();
+
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	virtual void OnPreRender(ID3D12Device* pd3dDevice, ID3D12CommandQueue* pd3dCommandQueue, ID3D12Fence* pd3dFence, HANDLE hFenceEvent, CScene* pScene);
+
+
+protected:
+	ULONG							m_nCubeMapSize = 256;
+
+	ID3D12CommandAllocator* m_pd3dCommandAllocator = NULL;
+	ID3D12GraphicsCommandList* m_pd3dCommandList = NULL;
+
+	ID3D12DescriptorHeap* m_pd3dRtvDescriptorHeap = NULL;
+	ID3D12DescriptorHeap* m_pd3dDsvDescriptorHeap = NULL;
+};

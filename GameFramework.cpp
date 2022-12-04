@@ -58,7 +58,7 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 
 	BuildObjects();
 	//m_pPlayer->SetPosition(XMFLOAT3(400.0f, 100.0f, 400.0f));
-	m_pPlayer->SetPosition(XMFLOAT3(-1000.0f, 0.0f, -1000.0f));
+	m_pPlayer->SetPosition(XMFLOAT3(-100.0f, 0.0f, -100.0f));
 	return(true);
 }
 
@@ -441,6 +441,11 @@ void CGameFramework::BuildObjects()
 	m_pScene->m_pPlayer = m_pPlayer = pAirplanePlayer;
 	m_pCamera = m_pPlayer->GetCamera();
 
+	for (int i = 0; i < dynamic_cast<CDynamicCubeMappingShader*>(m_pScene->GetDynamicShader()[0])->GetObjectNum(); ++i)
+	{
+		dynamic_cast<CDynamicCubeMappingObject*>(dynamic_cast<CDynamicCubeMappingShader*>(m_pScene->GetDynamicShader()[0])->GetppObject()[i])->SetPlayer(m_pPlayer);
+	}
+
 	CreateShaderVariables();
 
 	m_pd3dCommandList->Close();
@@ -564,9 +569,11 @@ void CGameFramework::FrameAdvance()
 
     AnimateObjects();
 
+	m_pScene->OnPreRender(m_pd3dDevice, m_pd3dCommandQueue, m_pd3dFence, m_hFenceEvent);
+	MoveToNextFrame();
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
-
+	
 	::SynchronizeResourceTransition(m_pd3dCommandList, m_ppd3dSwapChainBackBuffers[m_nSwapChainBufferIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle = m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -580,10 +587,11 @@ void CGameFramework::FrameAdvance()
 
 	m_pd3dCommandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE, &d3dDsvCPUDescriptorHandle);
 
-	m_pScene->OnPrepareRender(m_pd3dCommandList, m_pCamera);
-	UpdateShaderVariables();
 
-	if (m_pScene) m_pScene->Render(m_pd3dCommandList, m_pCamera);
+	m_pScene->OnPrepareRender(m_pd3dCommandList);
+	UpdateShaderVariables();
+	m_pScene->Render(m_pd3dCommandList, m_pCamera);
+
 
 #ifdef _WITH_PLAYER_TOP
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
@@ -596,7 +604,7 @@ void CGameFramework::FrameAdvance()
 
 	::ExecuteCommandList(m_pd3dCommandList, m_pd3dCommandQueue, m_pd3dFence, ++m_nFenceValues[m_nSwapChainBufferIndex], m_hFenceEvent);
 
-	m_pScene->OnPostRenderParticle();
+
 
 #ifdef _WITH_PRESENT_PARAMETERS
 	DXGI_PRESENT_PARAMETERS dxgiPresentParameters;
@@ -615,6 +623,8 @@ void CGameFramework::FrameAdvance()
 
 //	m_nSwapChainBufferIndex = m_pdxgiSwapChain->GetCurrentBackBufferIndex();
 	MoveToNextFrame();
+
+	m_pScene->OnPostRenderParticle();
 
 	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
 	size_t nLength = _tcslen(m_pszFrameRate);

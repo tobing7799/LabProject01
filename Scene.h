@@ -8,6 +8,7 @@
 #include "Player.h"
 
 #define MAX_LIGHTS			16 
+#define MAX_MATERIALS			8 
 
 #define POINT_LIGHT			1
 #define SPOT_LIGHT			2
@@ -36,6 +37,12 @@ struct LIGHTS
 	XMFLOAT4				m_xmf4GlobalAmbient;
 	int						m_nLights;
 };
+
+struct MATERIALS
+{
+	MATERIAL				m_pReflections[MAX_MATERIALS];
+};
+
 
 class CScene
 {
@@ -69,6 +76,13 @@ public:
 	void OnPostRenderParticle();
 	void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
 
+	void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);
+	void OnPreRender(ID3D12Device* pd3dDevice, ID3D12CommandQueue* pd3dCommandQueue, ID3D12Fence* pd3dFence, HANDLE hFenceEvent);
+
+	CShader** GetShader() { return m_ppShaders; };
+	CDynamicCubeMappingShader** GetDynamicShader() { return m_ppEnvironmentMappingShaders; };
+
+
 	void ReleaseUploadBuffers();
 	CHeightMapTerrain* GetTerrain() { return(m_pTerrain); }
 	CPlayer								*m_pPlayer = NULL;
@@ -96,4 +110,12 @@ public:
 
 	CParticleObject** m_ppParticleObjects = NULL;
 	int							m_nParticleObjects = 0;
+
+	MATERIALS* m_pMaterials = NULL;
+
+	ID3D12Resource* m_pd3dcbMaterials = NULL;
+	MATERIAL* m_pcbMappedMaterials = NULL;
+
+	CDynamicCubeMappingShader** m_ppEnvironmentMappingShaders = NULL;
+	int							m_nEnvironmentMappingShaders = 0;
 };
