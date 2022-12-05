@@ -90,7 +90,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	m_ppShaders = new CShader*[m_nShaders];
 
 	CObjectsShader *pObjectsShader = new CObjectsShader();
-	pObjectsShader->CreateShader(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
+	pObjectsShader->CreateObjShader(pd3dDevice, m_pd3dGraphicsRootSignature,NULL);
 	pObjectsShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, NULL);
 
 	m_ppShaders[0] = pObjectsShader;
@@ -273,7 +273,7 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-	pd3dRootParameters[1].Constants.Num32BitValues = 41;
+	pd3dRootParameters[1].Constants.Num32BitValues = 42;
 	pd3dRootParameters[1].Constants.ShaderRegister = 2; //GameObject
 	pd3dRootParameters[1].Constants.RegisterSpace = 0;
 	pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
@@ -648,7 +648,11 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 			{
 				if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_RenderEnable)
 				{
-					m_ppShaders[i]->Render(pd3dCommandList, pCamera);
+					pd3dCommandList->SetGraphicsRoot32BitConstant(1, 1, 41);
+					((CObjectsShader*)m_ppShaders[0])->LineRender(pd3dCommandList, pCamera,1);
+
+					pd3dCommandList->SetGraphicsRoot32BitConstant(1, 0, 41);
+					m_ppShaders[0]->Render(pd3dCommandList, pCamera,0);
 				}
 			}
 		}

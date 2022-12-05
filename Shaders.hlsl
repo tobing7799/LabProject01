@@ -32,7 +32,8 @@ cbuffer cbGameObjectInfo : register(b2)
 	matrix		gmtxGameObject : packoffset(c0);
 	MATERIAL	gMaterial : packoffset(c4);
 	TEXTURE		gtexture : packoffset(c8);
-	uint		gnTexturesMask : packoffset(c10);
+	uint		gnTexturesMask : packoffset(c10.x);
+	int		Line : packoffset(c10.y);
 };
 
 cbuffer cbFrameworkInfo : register(b5)
@@ -152,6 +153,11 @@ float4 PSStandard(VS_STANDARD_OUTPUT input) : SV_TARGET
 		normalW = normalize(mul(vNormal, TBN));
 		cIllumination = Lighting(input.positionW, normalW);
 		cColor = lerp(cColor, cIllumination, 0.5f);
+	}
+	
+	if (Line ==1)
+	{
+		cColor = float4(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 	return(cColor);
 }

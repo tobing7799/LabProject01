@@ -264,6 +264,7 @@ public:
 	virtual void OnPrepareRender() { }
 	virtual void OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList, CScene* pScene) { }
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL);
+	virtual void LineRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
 //	virtual void TerrainRender(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL);
 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList);
