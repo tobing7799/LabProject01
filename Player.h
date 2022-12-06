@@ -82,7 +82,7 @@ public:
 
 	virtual CCamera *ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed) { return(NULL); }
 	virtual void OnPrepareRender();
-	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera = NULL);
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL);
 };
 
 class CAirplanePlayer : public CPlayer
@@ -107,7 +107,7 @@ public:
 	virtual void OnPrepareRender();
 	virtual void OnPlayerUpdateCallback(float fTimeElapsed);
 	virtual void OnCameraUpdateCallback(float fTimeElapsed);
-	void ReloadMissile();
+	//void ReloadMissile();
 	void FireMissile(CShader* Missilesprite, float time);
 };
 

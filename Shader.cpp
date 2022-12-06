@@ -712,7 +712,6 @@ D3D12_RASTERIZER_DESC CObjectsShader::CreateRasterizerState(int nPipelineState)
 	{
 		::ZeroMemory(&d3dRasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
 		d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-		d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
 		d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
 		d3dRasterizerDesc.FrontCounterClockwise = FALSE;
 		d3dRasterizerDesc.DepthBias = 0;
@@ -1083,6 +1082,27 @@ D3D12_SHADER_BYTECODE CPlayerShader::CreatePixelShader(int nPipelineState)
 	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSStandard", "ps_5_1", &m_pd3dPixelShaderBlob));
 }
 
+D3D12_BLEND_DESC CPlayerShader::CreateBlendState(int nPipelineState)
+{
+	D3D12_BLEND_DESC d3dBlendDesc;
+	::ZeroMemory(&d3dBlendDesc, sizeof(D3D12_BLEND_DESC));
+
+	d3dBlendDesc.AlphaToCoverageEnable = TRUE;
+	d3dBlendDesc.IndependentBlendEnable = FALSE;
+	d3dBlendDesc.RenderTarget[0].BlendEnable = FALSE;
+	d3dBlendDesc.RenderTarget[0].LogicOpEnable = FALSE;
+	d3dBlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+	d3dBlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
+	d3dBlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	d3dBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	d3dBlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	d3dBlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	d3dBlendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+	d3dBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	return(d3dBlendDesc);
+}
+
 void CPlayerShader::CreateShader(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature)
 {
 	m_nPipelineStates = 1;
@@ -1428,13 +1448,12 @@ void CMultiSpriteObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandLis
 			if (m_bActive)
 			{
 				XMFLOAT3 xmf3CameraPosition = pCamera->GetPosition();
-				XMFLOAT3 xmf3PlayerPosition = pPlayer->GetPosition();
-				XMFLOAT3 xmf3PlayerLook = pPlayer->GetLookVector();
 				if (m_ppObjects[i])
 				{
 					m_ppObjects[i]->SetLookAt(xmf3CameraPosition, XMFLOAT3(0.0f, 1.0f, 0.0f));
 				}
 				CObjectsShader::Render(pd3dCommandList, pCamera);
+				m_ppObjects[i]->Animate(0.16f);
 			}
 		}
 	}
@@ -1576,7 +1595,8 @@ D3D12_DEPTH_STENCIL_DESC CParticleShader::CreateDepthStencilState(int nPipelineS
 {
 	D3D12_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
 	::ZeroMemory(&d3dDepthStencilDesc, sizeof(D3D12_DEPTH_STENCIL_DESC));
-	d3dDepthStencilDesc.DepthEnable = FALSE;
+	//d3dDepthStencilDesc.DepthEnable = FALSE;
+	d3dDepthStencilDesc.DepthEnable = TRUE;
 	d3dDepthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	d3dDepthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 	d3dDepthStencilDesc.StencilEnable = FALSE;
@@ -1696,7 +1716,7 @@ void CDynamicCubeMappingShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Gra
 	//CreateConstantBufferViews(pd3dDevice, m_nObjects, m_pd3dcbGameObjects, ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255));
 
 
-	CreateCbvSrvDescriptorHeaps(pd3dDevice, m_nObjects, 2);
+	//CreateCbvSrvDescriptorHeaps(pd3dDevice, m_nObjects, 2);
 	//CreateShaderVariables(pd3dDevice, pd3dCommandList);
 	//CreateConstantBufferViews(pd3dDevice, m_nObjects, m_pd3dcbGameObjects, ncbElementBytes);
 
@@ -1734,7 +1754,7 @@ void CDynamicCubeMappingShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Gra
 		float fHeight = pTerrain->GetHeight(xPosition, zPosition);
 		//m_ppObjects[i]->SetPosition(xPosition, fHeight + 150.0f, zPosition);
 		//m_ppObjects[i]->SetPosition(920, 720, 1270);
-		m_ppObjects[i]->SetPosition(-400, 0, -400);
+		m_ppObjects[i]->SetPosition(400, 450, 1000);
 		//m_ppObjects[i]->SetCbvGPUDescriptorHandlePtr(d3dCbvGPUDescriptorStartHandle.ptr);
 
 		d3dCbvGPUDescriptorStartHandle.ptr += ::gnCbvSrvDescriptorIncrementSize;

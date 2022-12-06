@@ -57,8 +57,8 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	CoInitialize(NULL);
 
 	BuildObjects();
-	//m_pPlayer->SetPosition(XMFLOAT3(400.0f, 100.0f, 400.0f));
-	m_pPlayer->SetPosition(XMFLOAT3(400.0f, 150.0f, 1500.0f));
+	m_pPlayer->SetPosition(XMFLOAT3(400.0f, 100.0f, 400.0f));
+	//m_pPlayer->SetPosition(XMFLOAT3(400.0f, 150.0f, 1500.0f));
 	return(true);
 }
 
@@ -322,9 +322,12 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 				case VK_RETURN:
 					break;
 				case VK_F1:
+					m_pCamera = m_pPlayer->ChangeCamera((DWORD)(FIRST_PERSON_CAMERA), m_GameTimer.GetTimeElapsed());
+					break;
 				case VK_F2:
+					break;
 				case VK_F3:
-					m_pCamera = m_pPlayer->ChangeCamera((DWORD)(wParam - VK_F1 + 1), m_GameTimer.GetTimeElapsed());
+					m_pCamera = m_pPlayer->ChangeCamera((DWORD)(THIRD_PERSON_CAMERA), m_GameTimer.GetTimeElapsed());
 					break;
 				case VK_F9:
 					ChangeSwapChainState();
@@ -391,6 +394,8 @@ void CGameFramework::OnDestroy()
 	if (m_pdxgiSwapChain) m_pdxgiSwapChain->Release();
     if (m_pd3dDevice) m_pd3dDevice->Release();
 	if (m_pdxgiFactory) m_pdxgiFactory->Release();
+
+	//if (m_pd3dcbFrameworkInfo) m_pd3dcbFrameworkInfo->Release();
 
 #if defined(_DEBUG)
 	IDXGIDebug1	*pdxgiDebug = NULL;
@@ -553,12 +558,7 @@ void CGameFramework::FrameAdvance()
 	if (m_pPlayer->GameCheck)
 	{
 		m_pPlayer->EndGame(m_hWnd);
-		OnDestroy();
-		CreateDirect3DDevice();
-		CreateCommandQueueAndList();
-		CreateRtvAndDsvDescriptorHeaps();
-		CreateSwapChain();
-		CreateDepthStencilView();
+		ReleaseObjects();
 		BuildObjects();
 		m_pPlayer->SetPosition(XMFLOAT3(400.0f, 100.0f, 400.0f));
 	}

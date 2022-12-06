@@ -154,6 +154,11 @@ float4 PSStandard(VS_STANDARD_OUTPUT input) : SV_TARGET
 		cIllumination = Lighting(input.positionW, normalW);
 		cColor = lerp(cColor, cIllumination, 0.5f);
 	}
+
+	if (cColor.x == 0 && cColor.y == 0 && cColor.z == 0)
+	{
+		cColor.w = 0.0f;
+	}
 	
 	if (Line ==1)
 	{

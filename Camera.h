@@ -101,6 +101,10 @@ public:
 	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f) { }
 	virtual void Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed) { }
 	virtual void SetLookAt(XMFLOAT3& xmf3LookAt) { }
+
+	void SetLookVector(XMFLOAT3 Look) { m_xmf3Look = Look; }
+	void SetRightVector(XMFLOAT3 Right) { m_xmf3Right = Right; }
+	void SetUpVector(XMFLOAT3 Up) { m_xmf3Up = Up; }
 };
 
 class CSpaceShipCamera : public CCamera
@@ -117,7 +121,7 @@ class CFirstPersonCamera : public CCamera
 public:
 	CFirstPersonCamera(CCamera *pCamera);
 	virtual ~CFirstPersonCamera() { }
-
+	virtual void Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed);
 	virtual void Rotate(float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f);
 };
 

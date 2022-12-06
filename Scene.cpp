@@ -114,7 +114,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	m_nParticleObjects = 1;
 	m_ppParticleObjects = new CParticleObject * [m_nParticleObjects];
 
-	m_ppParticleObjects[0] = new CParticleObject(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 65.0f, 0.0f), 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(8.0f, 8.0f), MAX_PARTICLES);
+	m_ppParticleObjects[0] = new CParticleObject(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, XMFLOAT3(400.0f, 100.0f, 400.0f), XMFLOAT3(0.0f, 65.0f, 0.0f), 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(8.0f, 8.0f), MAX_PARTICLES);
 
 	m_nEnvironmentMappingShaders = 1;
 	m_ppEnvironmentMappingShaders = new CDynamicCubeMappingShader * [m_nEnvironmentMappingShaders];
@@ -618,7 +618,7 @@ void CScene::AnimateObjects(float fTimeElapsed)
 
 void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
 {
-	//if (m_pd3dGraphicsRootSignature) pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
+	if (m_pd3dGraphicsRootSignature) pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
 
 	pCamera->SetViewportsAndScissorRects(pd3dCommandList);
 	pCamera->UpdateShaderVariables(pd3dCommandList);
@@ -708,7 +708,7 @@ void CScene::ObjectTravel(float fTimeElapsed)
 			}
 			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->LookTo(Vector3::Normalize(Vector3::Subtract(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Travelpath[(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Flightcount + 1) % (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->Travelpath.size())],
 			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->GetPosition())), ((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->GetUp());
-			//((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->MoveForward(40.0f* fTimeElapsed);
+			((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->MoveForward(40.0f* fTimeElapsed);
 		}
 		else if (!(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_Alive) && !(((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_RenderEnable))
 		{

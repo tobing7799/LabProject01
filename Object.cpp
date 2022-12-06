@@ -598,10 +598,11 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 
 void CGameObject::LineRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
-	XMFLOAT4X4 worldTransform = m_xmf4x4Transform;
-	XMMATRIX mtxScale = XMMatrixScaling(1.5, 1.5, 1.5);
+	OnPrepareRender();
+	XMFLOAT4X4 worldTransform = m_xmf4x4World;
+	XMMATRIX mtxScale = XMMatrixScaling(1.1, 1.1, 1.1);
 	worldTransform = Matrix4x4::Multiply(mtxScale, worldTransform);
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &worldTransform, 0);
+	UpdateShaderVariable(pd3dCommandList, &worldTransform);
 
 	if (m_nMaterials > 1)
 	{
@@ -636,9 +637,160 @@ void CGameObject::LineRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera
 		}
 	}
 
-	if (m_pSibling) m_pSibling->Render(pd3dCommandList, pCamera);
-	if (m_pChild) m_pChild->Render(pd3dCommandList, pCamera);
+	if (m_pSibling) m_pSibling->LineRender(pd3dCommandList, pCamera);
+	if (m_pChild) m_pChild->LineRender(pd3dCommandList, pCamera);
 }
+
+void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int index)
+{
+	/*{
+		OnPrepareRender();
+
+		UpdateShaderVariable(pd3dCommandList, &m_xmf4x4World);
+		if (m_nMaterials > 1)
+		{
+			for (int i = 0; i < m_nMaterials; i++)
+			{
+				if (m_ppMaterials[i])
+				{
+					if (m_ppMaterials[i]->m_pShader) m_ppMaterials[i]->m_pShader->Render(pd3dCommandList, pCamera);
+					m_ppMaterials[i]->UpdateShaderVariables(pd3dCommandList);
+				}
+
+				if (m_nMeshes == 1)
+				{
+					if (m_ppMeshes[0]) m_ppMeshes[0]->Render(pd3dCommandList, i);
+				}
+			}
+		}
+		else
+		{
+			if ((m_nMaterials == 1) && (m_ppMaterials[0]))
+			{
+				if (m_ppMaterials[0]->m_pShader) m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera);
+				m_ppMaterials[0]->UpdateShaderVariables(pd3dCommandList);
+			}
+
+			if (m_ppMeshes)
+			{
+				for (int i = 0; i < m_nMeshes; i++)
+				{
+					if (m_ppMeshes[i]) m_ppMeshes[i]->Render(pd3dCommandList, 0);
+				}
+			}
+		}
+
+		if (index == 0)
+		{
+			m_pChild->Render(pd3dCommandList, pCamera);
+		}
+		else
+		{
+			if (strcmp(m_pChild->m_pstrFrameName, "Hellfire_Missile"))
+			{
+
+			}
+			else
+			{
+				Render(pd3dCommandList, pCamera, 1);
+			}
+			m_pChild->m_pSibling->Render(pd3dCommandList, pCamera);
+		}
+	}*/
+
+	OnPrepareRender();
+
+	UpdateShaderVariable(pd3dCommandList, &m_xmf4x4World);
+	if (index == 3 && strcmp(this->m_pstrFrameName, "Hellfire_Missile") == 0)
+	{
+		if (m_nMaterials > 1)
+		{
+			for (int i = 0; i < m_nMaterials; i++)
+			{
+				if (m_ppMaterials[i])
+				{
+					if (m_ppMaterials[i]->m_pShader) m_ppMaterials[i]->m_pShader->Render(pd3dCommandList, pCamera);
+					m_ppMaterials[i]->UpdateShaderVariables(pd3dCommandList);
+				}
+
+				if (m_nMeshes == 1)
+				{
+					if (m_ppMeshes[0]) m_ppMeshes[0]->Render(pd3dCommandList, i);
+				}
+			}
+		}
+		else
+		{
+			if ((m_nMaterials == 1) && (m_ppMaterials[0]))
+			{
+				if (m_ppMaterials[0]->m_pShader) m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera);
+				m_ppMaterials[0]->UpdateShaderVariables(pd3dCommandList);
+			}
+
+			if (m_ppMeshes)
+			{
+				for (int i = 0; i < m_nMeshes; i++)
+				{
+					if (m_ppMeshes[i]) m_ppMeshes[i]->Render(pd3dCommandList, 0);
+				}
+			}
+		}
+		return;
+	}
+	else if (index != 3)
+	{
+		if (m_nMaterials > 1)
+		{
+			for (int i = 0; i < m_nMaterials; i++)
+			{
+				if (m_ppMaterials[i])
+				{
+					if (m_ppMaterials[i]->m_pShader) m_ppMaterials[i]->m_pShader->Render(pd3dCommandList, pCamera);
+					m_ppMaterials[i]->UpdateShaderVariables(pd3dCommandList);
+				}
+
+				if (m_nMeshes == 1)
+				{
+					if (m_ppMeshes[0]) m_ppMeshes[0]->Render(pd3dCommandList, i);
+				}
+			}
+		}
+		else
+		{
+			if ((m_nMaterials == 1) && (m_ppMaterials[0]))
+			{
+				if (m_ppMaterials[0]->m_pShader) m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera);
+				m_ppMaterials[0]->UpdateShaderVariables(pd3dCommandList);
+			}
+
+			if (m_ppMeshes)
+			{
+				for (int i = 0; i < m_nMeshes; i++)
+				{
+					if (m_ppMeshes[i]) m_ppMeshes[i]->Render(pd3dCommandList, 0);
+				}
+			}
+		}
+	}
+
+	if (m_pSibling) m_pSibling->Render(pd3dCommandList, pCamera,3);
+	if (m_pChild) m_pChild->Render(pd3dCommandList, pCamera,3);
+
+	if (index == 0)
+	{
+		m_pChild->m_pChild->Render(pd3dCommandList, pCamera,2);
+	}
+	else if (index == 1)
+	{
+		m_pChild->m_pSibling->Render(pd3dCommandList, pCamera,2);
+	}
+	else if(index == 2)
+	{
+		if (m_pSibling) m_pSibling->Render(pd3dCommandList, pCamera,2);
+		if (m_pChild) m_pChild->Render(pd3dCommandList, pCamera,2);
+	}
+}
+
 /*
 void CGameObject::TerrainRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
@@ -697,12 +849,12 @@ void CGameObject::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandLis
 
 void CGameObject::ReleaseShaderVariables()
 {
-//	if (m_pd3dcbGameObject)
-//	{
-//		m_pd3dcbGameObject->Unmap(0, NULL);
-//		m_pd3dcbGameObject->Release();
-//	}
-//	if (m_pMaterial) m_pMaterial->ReleaseShaderVariables();
+	if (m_pd3dcbGameObject)
+	{
+		m_pd3dcbGameObject->Unmap(0, NULL);
+		m_pd3dcbGameObject->Release();
+	}
+	if (m_pMaterial) m_pMaterial->ReleaseShaderVariables();
 }
 
 void CGameObject::ReleaseUploadBuffers()
@@ -1574,7 +1726,7 @@ void CDynamicCubeMappingObject::OnPreRender(ID3D12GraphicsCommandList* pd3dComma
 	{
 		m_ppCameras[j]->SetPosition(xmf3Position);
 		m_ppCameras[j]->GenerateViewMatrix(xmf3Position, Vector3::Add(xmf3Position, pxmf3LookAts[j]), pxmf3Ups[j]);
-
+		m_ppCameras[j]->SetMode(FIRST_PERSON_CAMERA);
 		pd3dCommandList->ClearRenderTargetView(m_pd3dRtvCPUDescriptorHandles[j], pfClearColor, 0, NULL);
 		pd3dCommandList->ClearDepthStencilView(m_d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 
