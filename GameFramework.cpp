@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 
 #include "stdafx.h"
-#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+//#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
 #include "GameFramework.h"
 
 CGameFramework::CGameFramework()
@@ -321,16 +321,16 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 					break;
 				case VK_RETURN:
 					break;
-				case VK_F1:
+				case '1':
 					m_pCamera = m_pPlayer->ChangeCamera((DWORD)(FIRST_PERSON_CAMERA), m_GameTimer.GetTimeElapsed());
 					break;
 				case VK_F2:
 					break;
-				case VK_F3:
+				case '3':
 					m_pCamera = m_pPlayer->ChangeCamera((DWORD)(THIRD_PERSON_CAMERA), m_GameTimer.GetTimeElapsed());
 					break;
-				case VK_F9:
-					ChangeSwapChainState();
+				case VK_F1:
+					//ChangeSwapChainState();
 					break;
 				case VK_F5:
 					break;

@@ -361,8 +361,8 @@ CCamera *CAirplanePlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 			SetMaxVelocityY(30.0f);
 			m_pCamera = OnChangeCamera(FIRST_PERSON_CAMERA, nCurrentCameraMode);
 			m_pCamera->SetTimeLag(0.0f);
-			m_pCamera->SetOffset(XMFLOAT3(0.0f, 2.3f, 1.7f));
-			m_pCamera->GenerateProjectionMatrix(0.1f, 5000.0f, ASPECT_RATIO, 60.0f);
+			m_pCamera->SetOffset(XMFLOAT3(0.0f, 2.3f, 1.5f));
+			m_pCamera->GenerateProjectionMatrix(0.2f, 5000.0f, ASPECT_RATIO, 60.0f);
 			m_pCamera->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
 			m_pCamera->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
 			break;

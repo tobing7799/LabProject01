@@ -118,4 +118,6 @@ public:
 
 	CDynamicCubeMappingShader** m_ppEnvironmentMappingShaders = NULL;
 	int							m_nEnvironmentMappingShaders = 0;
+
+	bool					edgeRender = false;
 };

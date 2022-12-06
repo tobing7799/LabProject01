@@ -114,7 +114,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	m_nParticleObjects = 1;
 	m_ppParticleObjects = new CParticleObject * [m_nParticleObjects];
 
-	m_ppParticleObjects[0] = new CParticleObject(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, XMFLOAT3(400.0f, 100.0f, 400.0f), XMFLOAT3(0.0f, 65.0f, 0.0f), 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(8.0f, 8.0f), MAX_PARTICLES);
+	m_ppParticleObjects[0] = new CParticleObject(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, XMFLOAT3(400.0f, 100.0f, 600.0f), XMFLOAT3(0.0f, 65.0f, 0.0f), 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(8.0f, 8.0f), MAX_PARTICLES);
 
 	m_nEnvironmentMappingShaders = 1;
 	m_ppEnvironmentMappingShaders = new CDynamicCubeMappingShader * [m_nEnvironmentMappingShaders];
@@ -565,6 +565,9 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 				}
 			}
 			break;
+		case VK_F1:
+			edgeRender = !edgeRender;
+			break;
 		default:
 			break;
 		}
@@ -648,8 +651,11 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 			{
 				if (((CObjectsShader*)m_ppShaders[0])->m_ppObjects[i]->m_RenderEnable)
 				{
-					pd3dCommandList->SetGraphicsRoot32BitConstant(1, 1, 41);
-					((CObjectsShader*)m_ppShaders[0])->LineRender(pd3dCommandList, pCamera,1);
+					if(edgeRender)
+					{
+						pd3dCommandList->SetGraphicsRoot32BitConstant(1, 1, 41);
+						((CObjectsShader*)m_ppShaders[0])->LineRender(pd3dCommandList, pCamera, 1);
+					}
 
 					pd3dCommandList->SetGraphicsRoot32BitConstant(1, 0, 41);
 					m_ppShaders[0]->Render(pd3dCommandList, pCamera,0);
